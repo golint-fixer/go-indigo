@@ -7,7 +7,9 @@ import (
 
 //Witness - Data representation of block witness
 type Witness struct {
-	Witnesstime      time.Time
-	WitnessedTxCount big.Int
-	WitnessSignature *Signature
+	WitnessTime      time.Time `json:"witness timestamp"`
+	WitnessedTxCount big.Int   `json:"witness reputation"`
+	WitnessSignature Signature `json:"witness signature"`
+	WitnessWeight    big.Int   `json:"witness weight"`
+	WitnessAge       big.Int   `json:"witness age"`
 }
