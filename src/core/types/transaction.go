@@ -17,10 +17,8 @@ type Transaction struct {
 	verifications *big.Int
 	weight        *big.Int
 
-	initialwitness *witness.Witness
-
-	ReceivedAt   time.Time
-	ReceivedFrom interface{}
+	InitialWitness   *witness.Witness
+	SecondaryWitness *witness.Witness
 
 	hash atomic.Value
 	size atomic.Value
