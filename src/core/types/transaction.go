@@ -13,8 +13,8 @@ type Transaction struct {
 
 	Contract *contracts.Contract `json:"contract"`
 
-	verifications *big.Int
-	weight        *big.Int
+	Verifications *big.Int `json:"confirmations"`
+	Weight        *Weight  `json:"weight"`
 
 	InitialWitness   *Witness
 	SecondaryWitness *Witness

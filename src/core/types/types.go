@@ -5,15 +5,6 @@ import (
 	"math/big"
 )
 
-/*
-import (
-	"crypto/sha1"
-	"encoding/base64"
-)
-*/
-
-//import "encoding"
-
 const (
 	// HashLength - basic, arbitrary specification for later hash format changes
 	HashLength = 32
@@ -22,11 +13,17 @@ const (
 	AddressLength = 20
 )
 
-//Hash - arbitraty data hash type
+// Hash - arbitraty data hash type
 type Hash [HashLength]byte
 
-//Address - address of specificed byte length
+// Address - address of specificed byte length
 type Address [AddressLength]byte
+
+// Identifier - Byte array representing identification of dataset
+type Identifier []byte
+
+// Weight - data representing computational power for one transaction
+type Weight *big.Int
 
 // BytesToAddress - Set address instance to byte array.
 func BytesToAddress(b []byte) Address {
@@ -67,4 +64,18 @@ func Hex2Bytes(str string) []byte {
 	h, _ := hex.DecodeString(str)
 
 	return h
+}
+
+// BigToWeight - Convert specified big.Int value to instance of weight struct
+func BigToWeight(val *big.Int) Weight {
+	var weightv Weight
+	weightv = val
+	return weightv
+}
+
+// IntToWeight - Convert specified Int value to instance of weight struct
+func IntToWeight(val int) Weight {
+	var weightv Weight
+	weightv = big.NewInt(int64(val))
+	return weightv
 }
