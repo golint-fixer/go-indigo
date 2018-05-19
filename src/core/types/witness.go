@@ -1,4 +1,4 @@
-package witness
+package types
 
 import (
 	"math/big"
@@ -9,4 +9,5 @@ import (
 type Witness struct {
 	Witnesstime      time.Time
 	WitnessedTxCount big.Int
+	WitnessSignature *Signature
 }

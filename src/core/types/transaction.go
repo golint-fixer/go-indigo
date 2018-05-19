@@ -2,7 +2,6 @@ package types
 
 import (
 	contracts "indogo/src/contracts"
-	"indogo/src/witness"
 	"math/big"
 	"sync/atomic"
 	"time"
@@ -17,8 +16,8 @@ type Transaction struct {
 	verifications *big.Int
 	weight        *big.Int
 
-	InitialWitness   *witness.Witness
-	SecondaryWitness *witness.Witness
+	InitialWitness   *Witness
+	SecondaryWitness *Witness
 
 	hash atomic.Value
 	size atomic.Value
