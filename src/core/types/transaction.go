@@ -1,8 +1,8 @@
 package types
 
 import (
-	contracts "indogo/indo-go/src/contracts"
-	"indogo/indo-go/src/witness"
+	contracts "indogo/src/contracts"
+	"indogo/src/witness"
 	"math/big"
 	"sync/atomic"
 	"time"
@@ -30,7 +30,7 @@ type Transaction struct {
 type transactiondata struct {
 	// Initialized in func:
 	Nonce     uint64    `json:"nonce" gencodec:"required"`
-	Recipient *Address  `json:"recipient" gencodec:"required"`
+	Recipient *Address  `json:"recipient"`
 	Amount    *big.Int  `json:"value" gencodec:"required"`
 	Payload   []byte    `json:"payload" gencodec:"required"`
 	Time      time.Time `json:"timestamp" gencodec:"required"`

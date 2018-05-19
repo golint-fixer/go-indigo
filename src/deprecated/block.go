@@ -1,7 +1,7 @@
 package deprecated
 
 import (
-	"indogo/indo-go/src/core/types"
+	"indogo/src/core/types"
 	"math/big"
 )
 

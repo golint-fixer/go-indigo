@@ -1,16 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"indogo/indo-go/src/contracts"
-	types "indogo/indo-go/src/core/types"
-	"log"
+	"indogo/src/contracts"
+	types "indogo/src/core/types"
 	"math/big"
-	"strings"
+	"os"
 )
 
 func main() {
 	testcontract := new(contracts.Contract)
-	test := types.NewTransaction(uint64(1), types.BytesToAddress([]byte{0x11}), big.NewInt(1000000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
-	log.Println(strings.Replace(fmt.Sprintf("%#v", test), ", ", "\n", -1))
+	test := types.NewTransaction(uint64(1), types.HexToAddress("095e7baea6a6c7c4c2dfeb977efac326af552d87"), big.NewInt(1000000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
+
+	b, err := json.MarshalIndent(test, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	os.Stdout.Write(b)
 }
