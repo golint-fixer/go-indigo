@@ -13,4 +13,4 @@ Indo's hashing algorithms and mining functions aim to be as robust and efficient
 
 ## Code History
 
-Historical data & initial source code available at the old Indo repository https://github.com/IngeniousBlock/GeniCoin.
+Historical data & initial source code available at the old Indo repositories: https://github.com/IngeniousBlock/GeniCoin, https://github.com/mitsukomegumi/indocore.
