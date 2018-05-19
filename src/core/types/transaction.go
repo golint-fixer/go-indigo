@@ -54,7 +54,7 @@ func newTransaction(nonce uint64, to *Address, amount *big.Int, data []byte, con
 		Recipient: to,
 		Payload:   data,
 		Amount:    new(big.Int),
-		Time:      time.Now(),
+		Time:      time.Now().UTC(),
 		Extra:     extra,
 	}
 
