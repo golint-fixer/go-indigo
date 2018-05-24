@@ -2,7 +2,6 @@ package types
 
 import (
 	contracts "indogo/src/contracts"
-	"math/big"
 	"sync/atomic"
 	"time"
 )
@@ -13,11 +12,13 @@ type Transaction struct {
 
 	Contract *contracts.Contract `json:"contract"`
 
-	Verifications *big.Int `json:"confirmations"`
-	Weight        *Weight  `json:"weight"`
+	Verifications *int `json:"confirmations"`
+	Weight        *int `json:"weight"`
 
 	InitialWitness   *Witness
 	SecondaryWitness *Witness
+
+	SendingAccount Account
 
 	hash atomic.Value
 	size atomic.Value
@@ -28,7 +29,7 @@ type transactiondata struct {
 	// Initialized in func:
 	Nonce     uint64    `json:"nonce" gencodec:"required"`
 	Recipient *Address  `json:"recipient"`
-	Amount    *big.Int  `json:"value" gencodec:"required"`
+	Amount    *int      `json:"value" gencodec:"required"`
 	Payload   []byte    `json:"payload" gencodec:"required"`
 	Time      time.Time `json:"timestamp" gencodec:"required"`
 	Extra     []byte    `json:"extraData" gencodec:"required"`
@@ -39,27 +40,27 @@ type transactiondata struct {
 }
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
-func NewTransaction(nonce uint64, to Address, amount *big.Int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func NewTransaction(nonce uint64, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	return newTransaction(nonce, &to, amount, data, contract, extra)
 }
 
 //NewContractCreation - Create new instance of transaction struct specifying contract creation arguments.
-func NewContractCreation(nonce uint64, amount *big.Int, data []byte, extra []byte) *Transaction {
+func NewContractCreation(nonce uint64, amount *int, data []byte, extra []byte) *Transaction {
 	return newTransaction(nonce, nil, amount, data, nil, extra)
 }
 
-func newTransaction(nonce uint64, to *Address, amount *big.Int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func newTransaction(nonce uint64, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	txdata := transactiondata{
 		Nonce:     nonce,
 		Recipient: to,
 		Payload:   data,
-		Amount:    new(big.Int),
+		Amount:    new(int),
 		Time:      time.Now().UTC(),
 		Extra:     extra,
 	}
 
 	if amount != nil {
-		txdata.Amount.Set(amount)
+		txdata.Amount = amount
 	}
 
 	return &Transaction{Data: txdata, Contract: contract}

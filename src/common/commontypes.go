@@ -1,4 +1,4 @@
-package types
+package common
 
 import (
 	"encoding/hex"
@@ -64,10 +64,4 @@ func Hex2Bytes(str string) []byte {
 	h, _ := hex.DecodeString(str)
 
 	return h
-}
-
-// URL - API available reference to network account
-type URL struct {
-	Scheme string
-	Path   string
 }

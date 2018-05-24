@@ -2,7 +2,6 @@ package deprecated
 
 import (
 	"indogo/src/core/types"
-	"math/big"
 )
 
 // Nonce - hash symbolizing amount of processing power required to produce block
@@ -13,8 +12,8 @@ type Header struct {
 	ParentHash   types.Hash    `json:"parentHash"       gencodec:"required"`
 	MinerAddress types.Address `json:"miner"            gencodec:"required"`
 	TxHash       types.Hash    `json:"transactionsRoot" gencodec:"required"`
-	Difficulty   *big.Int      `json:"difficulty"       gencodec:"required"`
-	Time         *big.Int      `json:"timestamp"        gencodec:"required"`
+	Difficulty   *int          `json:"difficulty"       gencodec:"required"`
+	Time         *int          `json:"timestamp"        gencodec:"required"`
 	Extra        []byte        `json:"extraData"        gencodec:"required"`
 	Nonce        Nonce         `json:"nonce"            gencodec:"required"`
 }
@@ -34,7 +33,7 @@ type Block struct {
 	hash atomic.Value
 	size atomic.Value
 
-	totaldifficulty *big.Int
+	totaldifficulty *int
 
 	ReceivedAt   time.Time
 	ReceivedFrom interface{}

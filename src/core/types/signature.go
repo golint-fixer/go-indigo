@@ -1,8 +1,6 @@
 package types
 
-import (
-	"math/big"
-)
+import "math/big"
 
 //Signature - data representing digital verification, as well as any payload attatched to the verification.
 type Signature []byte
@@ -14,8 +12,11 @@ func BytesToSignature(b []byte) Signature {
 	return a
 }
 
-// BigToSignature - Convert big.Int to Signature
+// BigToSignature - Convert int to Signature
 func BigToSignature(b *big.Int) Signature { return BytesToSignature(b.Bytes()) }
+
+// IntToSignature - Convert int to Signature
+func IntToSignature(b *int) Signature { return BytesToSignature((*big.NewInt(int64(*b))).Bytes()) }
 
 // HexToSignature - Convert hex string to Signature
 func HexToSignature(s string) Signature { return BytesToSignature(FromHex(s)) }

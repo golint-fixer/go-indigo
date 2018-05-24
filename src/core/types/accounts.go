@@ -1,0 +1,18 @@
+package types
+
+import (
+	"indogo/src/common"
+)
+
+// Account - represents account on the network
+type Account struct {
+	Address      common.Address `json:"address"`
+	URL          URL            `json:"url"`
+	Transactions []*Transaction
+}
+
+// GetBalance - returns balance of specified account.
+func GetBalance(account Account) *int {
+	test := 3
+	return &test
+}
