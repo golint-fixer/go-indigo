@@ -9,7 +9,11 @@ Indo is the next generation of global decentralized information exchange--partic
 
 ## True Decentralization
 
-Indo's hashing algorithms and mining functions aim to be as robust and efficient as possible, while implementing several safeguards to prevent the mass pooling of mining/node hosting resources in an effort to let the network remain completely decentralized.
+Indo's verification algorithms aren't based upon hashing power, but reliance and reputation, meaning that no one verification pool can gain dominance over the network.
+
+## Contributing
+
+Want to contribute to the development of Indo? Submit a pull request or contact one of our project admins!
 
 ## Code History
 
