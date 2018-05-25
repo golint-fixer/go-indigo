@@ -1,6 +1,7 @@
 package consensus
 
 import (
+	"indogo/src/common"
 	"indogo/src/core/types"
 )
 
@@ -8,8 +9,10 @@ import (
 func WitnessTransaction(tx *types.Transaction, witness *types.Witness) {
 	if VerifyTransaction(tx) {
 		*tx.Weight += *CalculateWitnessWeight(witness)
+		common.ThrowWarning("Added weight; transaction verified")
 	} else {
 		*tx.Weight -= *CalculateWitnessWeight(witness)
+		common.ThrowWarning("Removed weight; transaction illegitimate")
 	}
 }
 
@@ -20,7 +23,11 @@ func CalculateWeight(tx *types.Transaction) {
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
 func CalculateWitnessWeight(witness *types.Witness) *int {
-	witnessWeight := int(witness.WitnessedTxCount / witness.WitnessAge)
+	witnessWeight, err := int(witness.WitnessedTxCount / witness.WitnessAge)
+	if err != nil {
+		witnessWeight := 1
+		return &witnessWeight
+	}
 	return &witnessWeight
 }
 

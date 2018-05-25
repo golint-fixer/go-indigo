@@ -40,16 +40,16 @@ type transactiondata struct {
 }
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
-func NewTransaction(nonce uint64, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
-	return newTransaction(nonce, &to, amount, data, contract, extra)
+func NewTransaction(nonce uint64, SendingAccount Account, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+	return newTransaction(nonce, SendingAccount, &to, amount, data, contract, extra)
 }
 
 //NewContractCreation - Create new instance of transaction struct specifying contract creation arguments.
-func NewContractCreation(nonce uint64, amount *int, data []byte, extra []byte) *Transaction {
-	return newTransaction(nonce, nil, amount, data, nil, extra)
+func NewContractCreation(nonce uint64, IssuingAccount Account, amount *int, data []byte, extra []byte) *Transaction {
+	return newTransaction(nonce, IssuingAccount, nil, amount, data, nil, extra)
 }
 
-func newTransaction(nonce uint64, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func newTransaction(nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	txdata := transactiondata{
 		Nonce:     nonce,
 		Recipient: to,
@@ -63,5 +63,5 @@ func newTransaction(nonce uint64, to *Address, amount *int, data []byte, contrac
 		txdata.Amount = amount
 	}
 
-	return &Transaction{Data: txdata, Contract: contract}
+	return &Transaction{Data: txdata, Contract: contract, SendingAccount: from}
 }

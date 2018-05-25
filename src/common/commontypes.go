@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/big"
 )
 
@@ -59,9 +60,20 @@ func FromHex(s string) []byte {
 	return Hex2Bytes(s)
 }
 
+// IntToPointer - return int with pointer
+func IntToPointer(i int) *int {
+	p := i
+	return &p
+}
+
 // Hex2Bytes - convert Hex string to byte array
 func Hex2Bytes(str string) []byte {
 	h, _ := hex.DecodeString(str)
 
 	return h
+}
+
+// ThrowWarning - print warning to console
+func ThrowWarning(str string) {
+	fmt.Println(str)
 }

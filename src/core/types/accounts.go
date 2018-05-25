@@ -13,6 +13,11 @@ type Account struct {
 
 // GetBalance - returns balance of specified account.
 func GetBalance(account Account) *int {
-	test := 3
+	test := 100
 	return &test
+}
+
+// NewAccount - return new account
+func NewAccount(Address common.Address) *Account {
+	return &Account{Address: Address}
 }

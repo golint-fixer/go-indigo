@@ -1,6 +1,6 @@
 package deprecated
 
-import "math/big"
+/* Deprecated:
 
 // BigToWeight - Convert specified int value to instance of weight struct
 func BigToWeight(val *int) Weight {
@@ -15,3 +15,4 @@ func IntToWeight(val int) Weight {
 	weightv = big.NewInt(int64(val))
 	return weightv
 }
+*/
