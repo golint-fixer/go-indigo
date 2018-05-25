@@ -3,6 +3,7 @@ package consensus
 import (
 	"indogo/src/common"
 	"indogo/src/core/types"
+	"reflect"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified
@@ -23,11 +24,11 @@ func CalculateWeight(tx *types.Transaction) {
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
 func CalculateWitnessWeight(witness *types.Witness) *int {
-	witnessWeight, err := int(witness.WitnessedTxCount / witness.WitnessAge)
-	if err != nil {
+	if reflect.ValueOf(witness.WitnessedTxCount).IsNil() || reflect.ValueOf(witness.WitnessAge).IsNil() {
 		witnessWeight := 1
 		return &witnessWeight
 	}
+	witnessWeight := int(witness.WitnessedTxCount / witness.WitnessAge)
 	return &witnessWeight
 }
 
