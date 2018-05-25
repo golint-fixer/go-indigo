@@ -5,7 +5,7 @@
 
 ## What is Indo?
 
-Indo is the next generation of global decentralized information exchange--particularly that of monetary value--operating without central management. As a platform, Indo aims to make blockchain-based currencies more mainstream through Indo's absence of both transaction fees and excessive block wait times and intuitive integration APIs written entirely in vanilla Java and JS. While the Indo platform aims to help publicize blockchain technologies, Indo also aims to help form and foster the inception and funding of individualism through the ICF-10 token hosting platform, of which helps innovators and content-creators to get the funding they need while still remaining independent.
+Indo is the next generation of global decentralized information exchange--particularly that of monetary value--operating without central management. As a platform, Indo aims to make blockchain-based currencies more mainstream through Indo's absence of both transaction fees and excessive block wait times and intuitive integration APIs written entirely in Go. While the Indo platform aims to help publicize blockchain technologies, Indo also aims to help form and foster the inception and funding of individualism through the ICF-10 token hosting platform, of which helps innovators and content-creators to get the funding they need while still remaining independent.
 
 ## True Decentralization
 
