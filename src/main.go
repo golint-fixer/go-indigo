@@ -23,7 +23,7 @@ func main() {
 	testcontract := new(contracts.Contract)
 	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
 
-	consensus.WitnessTransaction(test, &witness) // Throws error
+	consensus.WitnessTransaction(test, &witness) // Panics
 
 	b, err := json.MarshalIndent(test, "", "  ")
 	if err != nil {
