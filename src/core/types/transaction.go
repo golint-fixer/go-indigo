@@ -12,11 +12,10 @@ type Transaction struct {
 
 	Contract *contracts.Contract `json:"contract"`
 
-	Verifications *int `json:"confirmations"`
-	Weight        *int `json:"weight"`
+	Verifications int `json:"confirmations"`
+	Weight        int `json:"weight"`
 
-	InitialWitness   *Witness
-	SecondaryWitness *Witness
+	InitialWitness *Witness
 
 	SendingAccount Account
 
@@ -63,5 +62,5 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 		txdata.Amount = amount
 	}
 
-	return &Transaction{Data: txdata, Contract: contract, SendingAccount: from}
+	return &Transaction{Data: txdata, Contract: contract, Weight: int(0), Verifications: int(0), SendingAccount: from}
 }

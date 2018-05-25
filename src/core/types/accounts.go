@@ -8,7 +8,7 @@ import (
 type Account struct {
 	Address      common.Address `json:"address"`
 	URL          URL            `json:"url"`
-	Transactions []*Transaction
+	Transactions []*Transaction `json:"account transactions"`
 }
 
 // GetBalance - returns balance of specified account.

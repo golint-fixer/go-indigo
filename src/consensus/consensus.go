@@ -3,16 +3,29 @@ package consensus
 import (
 	"indogo/src/common"
 	"indogo/src/core/types"
+	"reflect"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified
 func WitnessTransaction(tx *types.Transaction, witness *types.Witness) {
 	if VerifyTransaction(tx) {
-		*tx.Weight += *CalculateWitnessWeight(witness)
-		common.ThrowWarning("Added weight; transaction verified")
+		tx.Weight += *CalculateWitnessWeight(witness)
+		tx.Verifications++
+
+		if reflect.ValueOf(tx.InitialWitness).IsNil() {
+			tx.InitialWitness = witness
+		}
+
+		common.ThrowWarning("Added witness; transaction verified with weight " + string(tx.Weight))
 	} else {
-		*tx.Weight -= *CalculateWitnessWeight(witness)
-		common.ThrowWarning("Removed weight; transaction illegitimate")
+		tx.Weight -= *CalculateWitnessWeight(witness)
+		tx.Verifications++
+
+		if reflect.ValueOf(tx.InitialWitness).IsNil() {
+			tx.InitialWitness = witness
+		}
+
+		common.ThrowWarning("Added witness, removed weight; transaction illegitimate with weight " + string(tx.Weight))
 	}
 }
 
