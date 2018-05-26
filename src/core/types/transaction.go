@@ -68,9 +68,6 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 	bArray := hash.Sum([]byte(s))
 
 	*txdata.InitialHash = BytesToHash(bArray)
-	fmt.Println(bArray)
-	fmt.Println("Initial hash set: ")
-	fmt.Println(*txdata.InitialHash)
 
 	if amount != nil {
 		txdata.Amount = amount

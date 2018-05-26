@@ -43,7 +43,7 @@ func (a *Address) SetBytes(b []byte) {
 // BytesToHash - Set hash instance to byte array.
 func BytesToHash(b []byte) Hash {
 	var a Hash
-	a.SetBytes(b)
+	copy(a[:], b)
 	return a
 }
 
