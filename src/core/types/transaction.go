@@ -1,6 +1,10 @@
 package types
 
 import (
+	"crypto"
+	// crypto/sha256 - required for hashing functions
+	_ "crypto/sha256"
+	"fmt"
 	contracts "indogo/src/contracts"
 	"sync/atomic"
 	"time"
@@ -34,8 +38,8 @@ type transactiondata struct {
 	Extra     []byte    `json:"extraData" gencodec:"required"`
 
 	// Initialized at intercept:
-	Hash       *Hash `json:"hash" gencodec:"required"`
-	ParentHash *Hash `json:"parentHash" gencodec:"required"`
+	InitialHash *Hash `json:"hash" gencodec:"required"`
+	ParentHash  *Hash `json:"parentHash" gencodec:"required"`
 }
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
@@ -49,6 +53,7 @@ func NewContractCreation(nonce uint64, IssuingAccount Account, amount *int, data
 }
 
 func newTransaction(nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+	hash := crypto.SHA256.New()
 	txdata := transactiondata{
 		Nonce:     nonce,
 		Recipient: to,
@@ -57,6 +62,12 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 		Time:      time.Now().UTC(),
 		Extra:     extra,
 	}
+
+	s := fmt.Sprintf("%v", txdata)
+	fmt.Println(s)
+	bArray := hash.Sum([]byte(s))
+	finalHash := Hash{bArray[1]}
+	txdata.InitialHash = &finalHash
 
 	if amount != nil {
 		txdata.Amount = amount
