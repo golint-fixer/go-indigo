@@ -1,6 +1,5 @@
-# Indo
-## indogo
-
+# Indo Go
+Core go implementation of Indo protocol. 
 [![Build Status](https://travis-ci.org/MitsukoMegumi/Indocore.svg?branch=master)](https://travis-ci.org/MitsukoMegumi/Indocore)
 
 ## What is Indo?
@@ -15,6 +14,13 @@ Indo's verification algorithms aren't based upon hashing power, but reliance and
 
 Want to contribute to the development of Indo? Submit a pull request or contact one of our project admins!
 
+## Building
+
+Indo-go currently requires the latest build of the Go Language, of which can be downloaded [here](https://golang.org/). After installing the Go Language, clone the Indo-go repository into your go source code folder by running
+```git
+git clone https://github.com/MitsukoMegumi/indo-go.git
+```
+in your git command line of choice (make sure to clone the Indo repo into your go source code folder).
 ## Code History
 
 Historical data & initial source code available at the old Indo repositories: https://github.com/IngeniousBlock/GeniCoin, https://github.com/mitsukomegumi/indocore.
