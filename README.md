@@ -1,5 +1,6 @@
 # Indo Go
 Core go implementation of Indo protocol. 
+
 [![Build Status](https://travis-ci.org/MitsukoMegumi/Indocore.svg?branch=master)](https://travis-ci.org/MitsukoMegumi/Indocore)
 
 ## What is Indo?
