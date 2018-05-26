@@ -55,19 +55,22 @@ func NewContractCreation(nonce uint64, IssuingAccount Account, amount *int, data
 func newTransaction(nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	hash := crypto.SHA256.New()
 	txdata := transactiondata{
-		Nonce:     nonce,
-		Recipient: to,
-		Payload:   data,
-		Amount:    new(int),
-		Time:      time.Now().UTC(),
-		Extra:     extra,
+		Nonce:       nonce,
+		Recipient:   to,
+		Payload:     data,
+		Amount:      new(int),
+		Time:        time.Now().UTC(),
+		Extra:       extra,
+		InitialHash: &Hash{},
 	}
 
 	s := fmt.Sprintf("%v", txdata)
-	fmt.Println(s)
 	bArray := hash.Sum([]byte(s))
-	finalHash := Hash{bArray[1]}
-	txdata.InitialHash = &finalHash
+
+	*txdata.InitialHash = BytesToHash(bArray)
+	fmt.Println(bArray)
+	fmt.Println("Initial hash set: ")
+	fmt.Println(*txdata.InitialHash)
 
 	if amount != nil {
 		txdata.Amount = amount

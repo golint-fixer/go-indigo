@@ -40,6 +40,21 @@ func (a *Address) SetBytes(b []byte) {
 	copy(a[AddressLength-len(b):], b)
 }
 
+// BytesToHash - Set hash instance to byte array.
+func BytesToHash(b []byte) Hash {
+	var a Hash
+	a.SetBytes(b)
+	return a
+}
+
+// SetBytes - Sets the address to the value of b.
+func (a *Hash) SetBytes(b []byte) {
+	if len(b) > len(a) {
+		b = b[len(b):]
+	}
+	copy(a[len(b):], b)
+}
+
 // BigToAddress - Convert int to Address
 func BigToAddress(b *big.Int) Address { return BytesToAddress(b.Bytes()) }
 
