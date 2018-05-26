@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
 
 	account := types.NewAccount(accountAddress)
