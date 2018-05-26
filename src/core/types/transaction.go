@@ -17,7 +17,7 @@ type Transaction struct {
 
 	InitialWitness *Witness
 
-	SendingAccount Account
+	SendingAccount Account `json:"sending account"`
 
 	hash atomic.Value
 	size atomic.Value
