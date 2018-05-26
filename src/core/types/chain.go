@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"indogo/src/contracts"
 	"reflect"
 )
@@ -14,12 +15,13 @@ type Chain struct {
 }
 
 // AddTransaction - Add transaction to specified chain object
-func AddTransaction(Transaction *Transaction, RefChain Chain) {
+func (RefChain *Chain) AddTransaction(Transaction *Transaction) {
 	RefChain.Transactions = append(RefChain.Transactions, Transaction)
+	fmt.Println("Transaction added to chain")
 }
 
 // FindUnverifiedTransactions - Browse chain for most recent unverified transactions
-func FindUnverifiedTransactions(RefChain Chain, TxCount int) []*Transaction {
+func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 
 	var UnverifiedTransactions []*Transaction
 
