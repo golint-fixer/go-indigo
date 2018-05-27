@@ -19,11 +19,12 @@ type NodeDatabase struct {
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
-func NewNodeDatabase(selfRef networking.NodeID) *nodeDatabase {
-	return &nodeDatabase{SelfRef: selfRef}
+func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
+	return &NodeDatabase{SelfRef: selfRef}
 }
 
-func (db *nodeDatabase) addNode(ip string, id networking.NodeID) {
+// AddNode - add specified IP address & ID to node directory
+func (db *NodeDatabase) AddNode(ip string) {
 	p := fastping.NewPinger()
 	ra, err := net.ResolveIPAddr(ip, os.Args[1])
 	if err != nil {
@@ -32,14 +33,25 @@ func (db *nodeDatabase) addNode(ip string, id networking.NodeID) {
 	} else {
 		fmt.Println("Node tested successfully: " + ip)
 	}
+	p.AddIPAddr(ra)
+	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
+		fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
+	}
+	p.OnIdle = func() {
+		fmt.Println("finish")
+	}
+	err = p.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
-func (db *nodeDatabase) lastPing(id networking.NodeID) time.Time {
+func (db *NodeDatabase) lastPing(id networking.NodeID) time.Time {
 	nodeIndex := db.getNodeIndex(id)
 	return db.NodePingTimeDB[nodeIndex]
 }
 
-func (db *nodeDatabase) getNodeIndex(id networking.NodeID) int {
+func (db *NodeDatabase) getNodeIndex(id networking.NodeID) int {
 	for k, v := range db.NodeRefDB {
 		if id == v {
 			return k
