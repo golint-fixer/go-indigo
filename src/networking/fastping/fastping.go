@@ -49,9 +49,9 @@ import (
 )
 
 import (
-	"indogo/src/golang.org/x/net/icmp"
-	"indogo/src/golang.org/x/net/ipv4"
-	"indogo/src/golang.org/x/net/ipv6"
+	"golang.org/x/net/icmp"
+	"golang.org/x/net/ipv4"
+	"golang.org/x/net/ipv6"
 )
 
 const (

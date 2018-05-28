@@ -22,6 +22,15 @@ Indo-go currently requires the latest build of the Go Language, of which can be 
 git clone https://github.com/MitsukoMegumi/indo-go.git
 ```
 in your git command line of choice (make sure to clone the Indo repo into your go source code folder).
+
+### Dependencies
+
+Indo-go also requires golang's net package, of which can be acquired by running
+```
+go get golang.org/x/net
+```
+in any go-compatible terminal or command prompt.
+
 ## Code History
 
 Historical data & initial source code available at the old Indo repositories: https://github.com/IngeniousBlock/GeniCoin, https://github.com/mitsukomegumi/indocore.
