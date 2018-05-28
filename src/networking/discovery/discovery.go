@@ -5,7 +5,6 @@ import (
 	"indogo/src/networking"
 	"indogo/src/networking/fastping"
 	"net"
-	"os"
 	"time"
 )
 
@@ -26,19 +25,15 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 // AddNode - add specified IP address & ID to node directory
 func (db *NodeDatabase) AddNode(ip string) {
 	p := fastping.NewPinger()
-	ra, err := net.ResolveIPAddr(ip, os.Args[1])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	} else {
-		fmt.Println("Node tested successfully: " + ip)
-	}
-	p.AddIPAddr(ra)
+	_, err := p.Network("udp")
+	ipAddress := net.IPAddr{IP: net.IP([]byte(ip))}
+	p.AddIPAddr(&ipAddress)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
+		db.NodeAddress = append(db.NodeAddress, ip)
 	}
 	p.OnIdle = func() {
-		fmt.Println("finish")
+		fmt.Printf("Timed out with IP %s", ip)
 	}
 	err = p.Run()
 	if err != nil {
