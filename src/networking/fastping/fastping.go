@@ -46,9 +46,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
-)
 
-import (
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
