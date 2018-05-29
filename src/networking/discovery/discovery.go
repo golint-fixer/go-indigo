@@ -25,8 +25,8 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 // AddNode - add specified IP address & ID to node directory
 func (db *NodeDatabase) AddNode(ip string) {
 	p := fastping.NewPinger()
-	ipAddress := net.IPAddr{IP: net.IP([]byte(ip))}
-	p.AddIPAddr(&ipAddress)
+	ipAddress, err := net.ResolveIPAddr("ip", "www.google.com")
+	p.AddIPAddr(ipAddress)
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
 		db.NodeAddress = append(db.NodeAddress, ip)
@@ -34,7 +34,7 @@ func (db *NodeDatabase) AddNode(ip string) {
 	p.OnIdle = func() {
 		fmt.Printf("Timed out with IP %s", ipAddress)
 	}
-	err := p.Run()
+	err = p.Run()
 	if err != nil {
 		fmt.Println(err)
 	}
