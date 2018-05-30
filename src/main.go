@@ -6,7 +6,7 @@ import (
 	"indogo/src/common"
 	"indogo/src/consensus"
 	"indogo/src/contracts"
-	types "indogo/src/core/types"
+	"indogo/src/core/types"
 	"indogo/src/networking"
 	"indogo/src/networking/discovery"
 	"os"
@@ -17,7 +17,7 @@ func main() {
 	selfID := networking.NodeID{}
 
 	db := discovery.NewNodeDatabase(selfID)
-	db.AddNode("10.110.88.101")
+	db.AddNode("1.1.1.1")
 
 	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
 
