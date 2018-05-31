@@ -54,12 +54,14 @@ func TestIP(ip string) bool {
 	return returnVal
 }
 
-func (db *NodeDatabase) lastPing(id networking.NodeID) time.Time {
-	nodeIndex := db.getNodeIndex(id)
+// LastPing - Get last ping time for node
+func (db *NodeDatabase) LastPing(id networking.NodeID) time.Time {
+	nodeIndex := db.GetNodeIndex(id)
 	return db.NodePingTimeDB[nodeIndex]
 }
 
-func (db *NodeDatabase) getNodeIndex(id networking.NodeID) int {
+// GetNodeIndex - fetch/retrieve node index from node reference
+func (db *NodeDatabase) GetNodeIndex(id networking.NodeID) int {
 	for k, v := range db.NodeRefDB {
 		if id == v {
 			return k
