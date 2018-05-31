@@ -24,20 +24,34 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 
 // AddNode - add specified IP address & ID to node directory
 func (db *NodeDatabase) AddNode(ip string) {
+	if TestIP(ip) {
+		db.NodeAddress = append(db.NodeAddress, ip)
+	}
+}
+
+// TestIP - ping specified IP address to test for validity
+func TestIP(ip string) bool {
 	p := fastping.NewPinger()
 	ipAddress, err := net.ResolveIPAddr("ip", ip)
 	p.AddIPAddr(ipAddress)
+
+	returnVal := false
+
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		fmt.Printf("IP Addr: %s receive, RTT: %v\n", addr.String(), rtt)
-		db.NodeAddress = append(db.NodeAddress, ip)
+		fmt.Printf("IP %s tested successfully \n", addr.String())
+		returnVal = true
 	}
 	p.OnIdle = func() {
-		fmt.Printf("Timed out with IP %s", ipAddress)
+		fmt.Printf("Timed out with IP %s \n", ipAddress)
+		returnVal = false
 	}
 	err = p.Run()
 	if err != nil {
 		fmt.Println(err)
+		returnVal = false
 	}
+	return returnVal
 }
 
 func (db *NodeDatabase) lastPing(id networking.NodeID) time.Time {
