@@ -17,7 +17,7 @@ func main() {
 	selfID := networking.NodeID{}
 
 	db := discovery.NewNodeDatabase(selfID)
-	db.AddNode("1.1.1.1", selfID)
+	db.AddNode("192.168.1.1", selfID)
 
 	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
 

@@ -2,9 +2,11 @@ package discovery
 
 import (
 	"fmt"
+	"indogo/src/common"
 	"indogo/src/networking"
 	"indogo/src/networking/fastping"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -23,6 +25,11 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 
 // AddNode - add specified IP address & ID to node directory
 func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
+	if !strings.Contains(ip, "192.") {
+
+	} else {
+		common.ThrowWarning("database error: node cannot be internal")
+	}
 	if TestIP(ip) {
 		db.NodeAddress = append(db.NodeAddress, ip)
 		db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
