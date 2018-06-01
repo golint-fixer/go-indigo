@@ -44,4 +44,16 @@ func main() {
 
 	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\globbityglob.gob")
 
+	testDb := new(discovery.NodeDatabase)
+
+	error := common.ReadGob("R:\\gocode\\src\\indogo\\src\\globbityglob.gob", testDb)
+	if error != nil {
+		fmt.Println(error)
+	}
+
+	c, err := json.MarshalIndent(testDb, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	os.Stdout.Write(c)
 }
