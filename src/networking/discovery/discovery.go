@@ -27,6 +27,7 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
 	if !strings.Contains(ip, "192.") {
 		if TestIP(ip) {
+			fmt.Println("IP tested successfully; adding node to database")
 			db.NodeAddress = append(db.NodeAddress, ip)
 			db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
 			db.NodeRefDB = append(db.NodeRefDB, id)
@@ -61,8 +62,10 @@ func TestIP(ip string) bool {
 		returnVal = true
 	}
 	p.OnIdle = func() {
-		fmt.Printf("Timed out with IP %s \n", ipAddress)
-		returnVal = false
+		if returnVal != true {
+			fmt.Printf("Timed out with IP %s \n", ipAddress)
+			returnVal = false
+		}
 	}
 	err = p.Run()
 	if err != nil {

@@ -36,9 +36,10 @@ func main() {
 
 	testchain.AddTransaction(test)
 
-	b, err := json.MarshalIndent(testchain, "", "  ")
+	b, err := json.MarshalIndent(db, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	os.Stdout.Write(b)
+
 }
