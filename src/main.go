@@ -42,11 +42,11 @@ func main() {
 	}
 	os.Stdout.Write(b)
 
-	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\globbityglob.gob")
+	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\")
 
 	testDb := new(discovery.NodeDatabase)
 
-	error := common.ReadGob("R:\\gocode\\src\\indogo\\src\\globbityglob.gob", testDb)
+	error := common.ReadGob("R:\\gocode\\src\\indogo\\src\\", testDb)
 	if error != nil {
 		fmt.Println(error)
 	}

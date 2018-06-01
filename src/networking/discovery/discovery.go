@@ -39,7 +39,7 @@ func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
 
 // WriteDbToMemory - create serialized instance of specified NodeDatabase in specified path (string)
 func (db *NodeDatabase) WriteDbToMemory(path string) {
-	err := common.WriteGob(path, db)
+	err := common.WriteGob(path+"nodeDb.gob", db)
 
 	if err != nil {
 		fmt.Println(err)
