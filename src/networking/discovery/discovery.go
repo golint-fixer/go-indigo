@@ -11,7 +11,6 @@ import (
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
 type NodeDatabase struct {
 	NodeRefDB      []networking.NodeID
-	NodePingDB     []int
 	NodePingTimeDB []time.Time
 	NodeAddress    []string
 	SelfRef        networking.NodeID
@@ -23,9 +22,11 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 }
 
 // AddNode - add specified IP address & ID to node directory
-func (db *NodeDatabase) AddNode(ip string) {
+func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
 	if TestIP(ip) {
 		db.NodeAddress = append(db.NodeAddress, ip)
+		db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
+		db.NodeRefDB = append(db.NodeRefDB, id)
 	}
 }
 
