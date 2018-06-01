@@ -1,10 +1,12 @@
 package discovery
 
 import (
+	"errors"
 	"fmt"
 	"indogo/src/networking"
 	"indogo/src/networking/fastping"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -49,7 +51,11 @@ func TestIP(ip string) bool {
 	}
 	err = p.Run()
 	if err != nil {
-		fmt.Println(err)
+		if strings.Contains(err, errors.New("operation not permitted")) {
+			fmt.Println("operation requires root priveleges")
+		} else {
+			fmt.Println(err)
+		}
 		returnVal = false
 	}
 	return returnVal
