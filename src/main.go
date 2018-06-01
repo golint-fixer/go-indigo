@@ -42,4 +42,6 @@ func main() {
 	}
 	os.Stdout.Write(b)
 
+	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\globbityglob.gob")
+
 }
