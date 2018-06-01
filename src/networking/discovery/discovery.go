@@ -27,7 +27,7 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
 	if !strings.Contains(ip, "192.") {
 		if TestIP(ip) {
-			fmt.Println("IP tested successfully; adding node to database")
+			fmt.Println("adding node to database")
 			db.NodeAddress = append(db.NodeAddress, ip)
 			db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
 			db.NodeRefDB = append(db.NodeRefDB, id)
