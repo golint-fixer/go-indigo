@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"indogo/src/common"
 	"indogo/src/contracts"
 	"reflect"
 )
@@ -38,4 +39,22 @@ func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 	}
 
 	return UnverifiedTransactions
+}
+
+// WriteChainToMemory - create serialized instance of specified chain in specified path (string)
+func (RefChain Chain) WriteChainToMemory(path string) {
+	common.WriteGob(path+string(RefChain.Identifier)+"Chain.gob", RefChain)
+}
+
+// ReadChainFromMemory - read serialized object of specified chain from specified path
+func ReadChainFromMemory(path string) *Chain {
+	tempChain := new(Chain)
+
+	error := common.ReadGob(path+"Chain.gob", tempChain)
+	if error != nil {
+		fmt.Println(error)
+	} else {
+		return tempChain
+	}
+	return nil
 }
