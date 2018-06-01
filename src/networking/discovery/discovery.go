@@ -1,7 +1,6 @@
 package discovery
 
 import (
-	"errors"
 	"fmt"
 	"indogo/src/common"
 	"indogo/src/networking"
@@ -27,14 +26,24 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 // AddNode - add specified IP address & ID to node directory
 func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
 	if !strings.Contains(ip, "192.") {
-
+		if TestIP(ip) {
+			db.NodeAddress = append(db.NodeAddress, ip)
+			db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
+			db.NodeRefDB = append(db.NodeRefDB, id)
+		}
 	} else {
 		common.ThrowWarning("database error: node cannot be internal")
 	}
-	if TestIP(ip) {
-		db.NodeAddress = append(db.NodeAddress, ip)
-		db.NodePingTimeDB = append(db.NodePingTimeDB, time.Now().UTC())
-		db.NodeRefDB = append(db.NodeRefDB, id)
+}
+
+// WriteDbToMemory - create serialized instance of specified NodeDatabase in specified path (string)
+func (db *NodeDatabase) WriteDbToMemory(path string) {
+	err := common.WriteGob(path, db)
+
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		common.ThrowSuccess("object written to memory")
 	}
 }
 
@@ -57,7 +66,7 @@ func TestIP(ip string) bool {
 	}
 	err = p.Run()
 	if err != nil {
-		if strings.Contains(err, errors.New("operation not permitted")) {
+		if strings.Contains(err.Error(), "operation not permitted") {
 			fmt.Println("operation requires root priveleges")
 		} else {
 			fmt.Println(err)
