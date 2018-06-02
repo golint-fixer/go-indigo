@@ -2,7 +2,9 @@ package common
 
 import (
 	"encoding/gob"
+	"log"
 	"os"
+	"path/filepath"
 )
 
 // WriteGob - create gob from specified object, at filePath
@@ -25,4 +27,13 @@ func ReadGob(filePath string, object interface{}) error {
 	}
 	file.Close()
 	return err
+}
+
+// GetCurrentDir - returns current execution directory
+func GetCurrentDir() string {
+	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return currentDir
 }

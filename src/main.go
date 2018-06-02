@@ -41,9 +41,9 @@ func main() {
 
 	//Test chain serialization
 
-	testchain.WriteChainToMemory("R:\\gocode\\src\\indogo\\src\\")
+	testchain.WriteChainToMemory(common.GetCurrentDir())
 
-	testDesChain := types.ReadChainFromMemory("R:\\gocode\\src\\indogo\\src\\")
+	testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
 
 	//Dump deserialized chain
 
@@ -55,9 +55,9 @@ func main() {
 
 	//Test nodeDB serialization
 
-	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\")
+	db.WriteDbToMemory(common.GetCurrentDir())
 
-	testDb := discovery.ReadDbFromMemory("R:\\gocode\\src\\indogo\\src\\")
+	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
 	//Dump deserialized database
 
