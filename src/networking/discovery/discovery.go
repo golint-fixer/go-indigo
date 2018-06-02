@@ -11,15 +11,16 @@ import (
 )
 
 const (
-	bootStrapNode1 = "108.6.212.149"
+	bootStrapNode1Addr = "108.6.212.149"
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
 type NodeDatabase struct {
-	NodeRefDB      []networking.NodeID
-	NodePingTimeDB []time.Time
-	NodeAddress    []string
-	SelfRef        networking.NodeID
+	NodeRefDB          []networking.NodeID
+	NodePingTimeDB     []time.Time
+	NodeAddress        []string
+	SelfRef            networking.NodeID
+	BootstrapNodeAddrs []string
 }
 
 // FindNode - find best node to connect to, returns ip address as string
@@ -51,7 +52,9 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 		fmt.Println("read existing node database from mem")
 		return readDb
 	}
-	return &NodeDatabase{SelfRef: selfRef}
+	var tempArr []string
+	tempArr = append(tempArr, bootStrapNode1Addr)
+	return &NodeDatabase{SelfRef: selfRef, BootstrapNodeAddrs: tempArr}
 }
 
 // AddNode - add specified IP address & ID to node directory
