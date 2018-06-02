@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	bootStrapNode1 = "108.6.212.149"
+)
+
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
 type NodeDatabase struct {
 	NodeRefDB      []networking.NodeID
@@ -71,7 +75,7 @@ func (db *NodeDatabase) WriteDbToMemory(path string) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		common.ThrowSuccess("object written to memory")
+		common.ThrowSuccess("\nobject written to memory")
 	}
 }
 
