@@ -14,6 +14,8 @@ type Connection struct {
 
 	Active bool
 
+	connectionData []byte
+
 	Type   ConnectionType
 	Events []ConnectionEvent
 }

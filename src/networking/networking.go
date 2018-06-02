@@ -22,7 +22,11 @@ func Relay(Tx *types.Transaction) {
 
 }
 
-func newConnection(initAddr string, destAddr string, connType ConnectionType) *Connection {
+func (conn *Connection) attempt() {
+
+}
+
+func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
 	if common.StringInSlice(string(connType), ConnectionTypes) {
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType}
 		conn.AddEvent("started")
@@ -31,3 +35,5 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType) *C
 	common.ThrowWarning("connection type not valid")
 	return nil
 }
+
+//https://systembash.com/a-simple-go-tcp-server-and-tcp-client/
