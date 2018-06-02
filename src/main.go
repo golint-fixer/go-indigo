@@ -13,13 +13,10 @@ import (
 )
 
 func main() {
-
-	networking.AddPortMapping(5839)
-
 	selfID := networking.NodeID{} //Testing init of NodeID (self reference)
 
 	db := discovery.NewNodeDatabase(selfID) //Initializing net New NodeDatabase
-	db.AddNode("1.1.1.1", selfID)           //Adding node to database
+	db.WriteDbToMemory(common.GetCurrentDir())
 
 	//Creating new account:
 

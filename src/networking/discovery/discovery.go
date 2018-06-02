@@ -32,17 +32,20 @@ func (db *NodeDatabase) FindNode() string {
 }
 
 func (db *NodeDatabase) getBestNode() string {
-	x := 0
-	bestMatchPingTime := db.NodePingTimeDB[0]
-	nodeIndex := 0
-	for x != len(db.NodeAddress) {
-		if db.NodePingTimeDB[x].After(bestMatchPingTime) {
-			bestMatchPingTime = db.NodePingTimeDB[x]
-			nodeIndex = x
+	if len(db.NodeAddress) > 0 {
+		x := 0
+		bestMatchPingTime := db.NodePingTimeDB[0]
+		nodeIndex := 0
+		for x != len(db.NodeAddress) {
+			if db.NodePingTimeDB[x].After(bestMatchPingTime) {
+				bestMatchPingTime = db.NodePingTimeDB[x]
+				nodeIndex = x
+			}
+			x++
 		}
-		x++
+		return db.NodeAddress[nodeIndex]
 	}
-	return db.NodeAddress[nodeIndex]
+	return db.BootstrapNodeAddrs[0]
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
