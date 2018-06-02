@@ -66,4 +66,6 @@ func main() {
 		fmt.Println("error:", err)
 	}
 	os.Stdout.Write(c)
+
+	fmt.Println("\nbest node: " + testDb.FindNode())
 }
