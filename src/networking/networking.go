@@ -23,7 +23,7 @@ func AddPortMapping(port int) {
 	}
 }
 
-// Relay - push localized or received transaction to further node.
+// Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	AddPortMapping(3000)
 	txBytes := new(bytes.Buffer)
