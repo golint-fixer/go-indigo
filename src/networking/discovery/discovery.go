@@ -48,6 +48,19 @@ func (db *NodeDatabase) WriteDbToMemory(path string) {
 	}
 }
 
+// ReadDbFromMemory - read serialized object of specified node database from specified path
+func ReadDbFromMemory(path string) *NodeDatabase {
+	tempDb := new(NodeDatabase)
+
+	error := common.ReadGob(path+"nodeDb.gob", tempDb)
+	if error != nil {
+		fmt.Println(error)
+	} else {
+		return tempDb
+	}
+	return nil
+}
+
 // TestIP - ping specified IP address to test for validity
 func TestIP(ip string) bool {
 	p := fastping.NewPinger()

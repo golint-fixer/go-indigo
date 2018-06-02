@@ -13,43 +13,53 @@ import (
 )
 
 func main() {
-	selfID := networking.NodeID{}
+	selfID := networking.NodeID{} //Testing init of NodeID (self reference)
 
-	db := discovery.NewNodeDatabase(selfID)
-	db.AddNode("1.1.1.1", selfID)
+	db := discovery.NewNodeDatabase(selfID) //Initializing net New NodeDatabase
+	db.AddNode("1.1.1.1", selfID)           //Adding node to database
+
+	//Creating new account:
 
 	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
-
 	account := types.NewAccount(accountAddress)
 
-	signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
+	//Creating witness data:
 
+	signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
 	witness := types.NewWitness(1000, signature, 100)
 
+	//Creating transaction, contract, chain
+
 	testcontract := new(contracts.Contract)
-
 	testchain := types.Chain{ParentContract: testcontract}
-
 	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
 
-	consensus.WitnessTransaction(test, &witness)
+	//Adding witness, transaction to chain
 
+	consensus.WitnessTransaction(test, &witness)
 	testchain.AddTransaction(test)
 
-	b, err := json.MarshalIndent(db, "", "  ")
+	//Test chain serialization
+
+	testchain.WriteChainToMemory("R:\\gocode\\src\\indogo\\src\\")
+
+	testDesChain := types.ReadChainFromMemory("R:\\gocode\\src\\indogo\\src\\")
+
+	//Dump deserialized chain
+
+	b, err := json.MarshalIndent(testDesChain, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	os.Stdout.Write(b)
 
+	//Test nodeDB serialization
+
 	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\")
 
-	testDb := new(discovery.NodeDatabase)
+	testDb := discovery.ReadDbFromMemory("R:\\gocode\\src\\indogo\\src\\")
 
-	error := common.ReadGob("R:\\gocode\\src\\indogo\\src\\", testDb)
-	if error != nil {
-		fmt.Println(error)
-	}
+	//Dump deserialized database
 
 	c, err := json.MarshalIndent(testDb, "", "  ")
 	if err != nil {
