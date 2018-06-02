@@ -24,7 +24,9 @@ func Relay(Tx *types.Transaction) {
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType) *Connection {
 	if common.StringInSlice(string(connType), ConnectionTypes) {
-		return &Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType}
+		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType}
+		conn.AddEvent("started")
+		return &conn
 	}
 	common.ThrowWarning("connection type not valid")
 	return nil
