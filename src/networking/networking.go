@@ -11,6 +11,7 @@ import (
 	"indo-go/src/networking/discovery"
 	"indo-go/src/networking/upnp"
 	"net"
+	"reflect"
 )
 
 // AddPortMapping - add port mapping on specified port
@@ -25,10 +26,16 @@ func AddPortMapping(port int) {
 
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
-	AddPortMapping(3000)
-	txBytes := new(bytes.Buffer)
-	json.NewEncoder(txBytes).Encode(Tx)
-	newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
+		if ListenChain().Transactions[len(ListenChain().Transactions)].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
+			AddPortMapping(3000)
+			txBytes := new(bytes.Buffer)
+			json.NewEncoder(txBytes).Encode(Tx)
+			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+		}
+	} else {
+		common.ThrowWarning("transaction behind latest chain; fetch latest chain")
+	}
 }
 
 // RelayChain - push localized or received chain to further node
