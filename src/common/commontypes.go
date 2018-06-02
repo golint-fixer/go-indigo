@@ -77,3 +77,8 @@ func Hex2Bytes(str string) []byte {
 func ThrowWarning(str string) {
 	fmt.Println(str)
 }
+
+// ThrowSuccess - print warning to console
+func ThrowSuccess(str string) {
+	fmt.Println(str)
+}
