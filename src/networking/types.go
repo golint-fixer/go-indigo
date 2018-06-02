@@ -14,7 +14,7 @@ type Connection struct {
 
 	Active bool
 
-	connectionData []byte
+	Data []byte
 
 	Type   ConnectionType
 	Events []ConnectionEvent
@@ -29,4 +29,9 @@ type ConnectionType string
 // AddEvent - add specified connection event to connection
 func (conn *Connection) AddEvent(Event ConnectionEvent) {
 	conn.Events = append(conn.Events, Event)
+}
+
+// ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
+func (conn *Connection) ResolveData() {
+
 }
