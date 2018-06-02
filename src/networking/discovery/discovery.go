@@ -42,6 +42,11 @@ func (db *NodeDatabase) getBestNode() string {
 
 // NewNodeDatabase - return new node database initialized with self ID
 func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
+	readDb := ReadDbFromMemory(common.GetCurrentDir())
+	if readDb != nil {
+		fmt.Println("read existing node database from mem")
+		return readDb
+	}
 	return &NodeDatabase{SelfRef: selfRef}
 }
 
