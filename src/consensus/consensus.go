@@ -1,8 +1,8 @@
 package consensus
 
 import (
-	"indogo/src/common"
-	"indogo/src/core/types"
+	"indo-go/src/common"
+	"indo-go/src/core/types"
 	"reflect"
 )
 

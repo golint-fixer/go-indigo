@@ -2,9 +2,9 @@ package discovery
 
 import (
 	"fmt"
-	"indogo/src/common"
-	"indogo/src/networking"
-	"indogo/src/networking/fastping"
+	"indo-go/src/common"
+	"indo-go/src/networking"
+	"indo-go/src/networking/fastping"
 	"net"
 	"strings"
 	"time"

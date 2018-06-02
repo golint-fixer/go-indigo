@@ -1,7 +1,7 @@
 package types
 
 import (
-	"indogo/src/common"
+	"indo-go/src/common"
 )
 
 // Account - represents account on the network

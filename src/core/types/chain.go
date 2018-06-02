@@ -2,8 +2,8 @@ package types
 
 import (
 	"fmt"
-	"indogo/src/common"
-	"indogo/src/contracts"
+	"indo-go/src/common"
+	"indo-go/src/contracts"
 	"reflect"
 )
 

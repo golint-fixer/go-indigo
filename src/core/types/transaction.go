@@ -5,7 +5,7 @@ import (
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
-	contracts "indogo/src/contracts"
+	contracts "indo-go/src/contracts"
 	"sync/atomic"
 	"time"
 )

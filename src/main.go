@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"indogo/src/common"
-	"indogo/src/consensus"
-	"indogo/src/contracts"
-	"indogo/src/core/types"
-	"indogo/src/networking"
-	"indogo/src/networking/discovery"
+	"indo-go/src/common"
+	"indo-go/src/consensus"
+	"indo-go/src/contracts"
+	"indo-go/src/core/types"
+	"indo-go/src/networking"
+	"indo-go/src/networking/discovery"
 	"os"
 )
 

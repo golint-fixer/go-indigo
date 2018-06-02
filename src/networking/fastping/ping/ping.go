@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"indogo/src/networking/fastping"
+	"indo-go/src/networking/fastping"
 	"net"
 	"os"
 	"os/signal"
