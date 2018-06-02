@@ -31,6 +31,14 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
 }
 
+// RelayChain - push localized or received chain to further node
+func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
+	AddPortMapping(3000)
+	chBytes := new(bytes.Buffer)
+	json.NewEncoder(chBytes).Encode(Ch)
+	newConnection(Db.SelfAddr, Db.FindNode(), "fullchain", chBytes.Bytes()).attempt()
+}
+
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
 	AddPortMapping(3000)
@@ -47,7 +55,40 @@ func ListenRelay() *types.Transaction {
 
 	messsage, _, err := bufio.NewReader(conn).ReadLine()
 	tempCon.ResolveData(messsage)
-	return types.DecodeTxFromBytes(tempCon.Data)
+
+	if tempCon.Type == "relay" {
+		return types.DecodeTxFromBytes(tempCon.Data)
+	}
+
+	common.ThrowWarning("chain relay found; wanted transaction")
+
+	return nil
+}
+
+// ListenChain - listen for chain relays, relay to full node or host
+func ListenChain() *types.Chain {
+	AddPortMapping(3000)
+
+	tempCon := Connection{}
+
+	ln, err := net.Listen("tcp", ":3000")
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	conn, err := ln.Accept()
+
+	message, _, err := bufio.NewReader(conn).ReadLine()
+	tempCon.ResolveData(message)
+
+	if tempCon.Type == "fullchain" {
+		return types.DecodeChainFromBytes(tempCon.Data)
+	}
+
+	common.ThrowWarning("transaction relay found; wanted chain")
+
+	return nil
 }
 
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
@@ -59,6 +100,13 @@ func ListenRelayWithAdd(Ch *types.Chain, Wit *types.Witness, Db *discovery.NodeD
 	Relay(tx, Db)
 }
 
+// ListenChainWithAdd - listen for chain relays, set local chain to result
+func ListenChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
+	*Ch = *ListenChain()
+	Ch.WriteChainToMemory(common.GetCurrentDir())
+	RelayChain(Ch, Db)
+}
+
 func handleReceivedBytes(b []byte) *Connection {
 	tempConn := Connection{}
 	tempConn.ResolveData(b)
@@ -68,7 +116,7 @@ func handleReceivedBytes(b []byte) *Connection {
 // TODO: encode
 
 func (conn *Connection) attempt() {
-
+	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
