@@ -18,6 +18,28 @@ type NodeDatabase struct {
 	SelfRef        networking.NodeID
 }
 
+// FindNode - find best node to connect to, returns ip address as string
+func (db *NodeDatabase) FindNode() string {
+	if len(db.NodeAddress) == 0 {
+		ReadDbFromMemory(common.GetCurrentDir())
+	}
+	return db.getBestNode()
+}
+
+func (db *NodeDatabase) getBestNode() string {
+	x := 0
+	bestMatchPingTime := db.NodePingTimeDB[0]
+	nodeIndex := 0
+	for x != len(db.NodeAddress) {
+		if db.NodePingTimeDB[x].After(bestMatchPingTime) {
+			bestMatchPingTime = db.NodePingTimeDB[x]
+			nodeIndex = x
+		}
+		x++
+	}
+	return db.NodeAddress[nodeIndex]
+}
+
 // NewNodeDatabase - return new node database initialized with self ID
 func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 	return &NodeDatabase{SelfRef: selfRef}
