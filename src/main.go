@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+
+	networking.AddPortMapping(5839)
+
 	selfID := networking.NodeID{} //Testing init of NodeID (self reference)
 
 	db := discovery.NewNodeDatabase(selfID) //Initializing net New NodeDatabase
@@ -58,14 +61,6 @@ func main() {
 	db.WriteDbToMemory(common.GetCurrentDir())
 
 	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
-
-	//Dump deserialized database
-
-	c, err := json.MarshalIndent(testDb, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	os.Stdout.Write(c)
 
 	fmt.Println("\nbest node: " + testDb.FindNode())
 }

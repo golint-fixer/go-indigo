@@ -14,7 +14,7 @@ A simple implements UPnP protocol for Golang library.  Add port mapping for NAT 
 mapping := new(upnp.Upnp)
 if err := mapping.AddPortMapping(55789, 55789, "TCP"); err == nil {
 	fmt.Println("success !")
-	// remove port mapping in gatway
+	// remove port mapping in gateway
 	mapping.Reclaim()
 } else {
 	fmt.Println("fail !")
@@ -32,7 +32,7 @@ if err != nil {
 	fmt.Println("gateway ip address: ", upnpMan.Gateway.Host)
 }
 ~~~
-### 3. get an internet ip address in gatway.
+### 3. get an internet ip address in gateway.
 ~~~ go
 upnpMan := new(upnp.Upnp)
 err := upnpMan.ExternalIPAddr()
