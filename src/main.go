@@ -7,15 +7,14 @@ import (
 	"indo-go/src/consensus"
 	"indo-go/src/contracts"
 	"indo-go/src/core/types"
-	"indo-go/src/networking"
 	"indo-go/src/networking/discovery"
 	"os"
 )
 
 func main() {
-	selfID := networking.NodeID{} //Testing init of NodeID (self reference)
+	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-	db := discovery.NewNodeDatabase(selfID) //Initializing net New NodeDatabase
+	db := discovery.NewNodeDatabase(selfID, "108.6.212.149") //Initializing net New NodeDatabase
 	db.WriteDbToMemory(common.GetCurrentDir())
 
 	//Creating new account:

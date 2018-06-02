@@ -3,7 +3,6 @@ package discovery
 import (
 	"fmt"
 	"indo-go/src/common"
-	"indo-go/src/networking"
 	"indo-go/src/networking/fastping"
 	"net"
 	"strings"
@@ -16,12 +15,16 @@ const (
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
 type NodeDatabase struct {
-	NodeRefDB          []networking.NodeID
+	NodeRefDB          []NodeID
 	NodePingTimeDB     []time.Time
 	NodeAddress        []string
-	SelfRef            networking.NodeID
+	SelfRef            NodeID
+	SelfAddr           string
 	BootstrapNodeAddrs []string
 }
+
+// NodeID - byte array identifying individual node
+type NodeID [64]byte
 
 // FindNode - find best node to connect to, returns ip address as string
 func (db *NodeDatabase) FindNode() string {
@@ -49,7 +52,7 @@ func (db *NodeDatabase) getBestNode() string {
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
-func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
+func NewNodeDatabase(selfRef NodeID, selfAddr string) *NodeDatabase {
 	readDb := ReadDbFromMemory(common.GetCurrentDir())
 	if readDb != nil {
 		fmt.Println("read existing node database from mem")
@@ -57,11 +60,11 @@ func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
 	}
 	var tempArr []string
 	tempArr = append(tempArr, bootStrapNode1Addr)
-	return &NodeDatabase{SelfRef: selfRef, BootstrapNodeAddrs: tempArr}
+	return &NodeDatabase{SelfRef: selfRef, SelfAddr: selfAddr, BootstrapNodeAddrs: tempArr}
 }
 
 // AddNode - add specified IP address & ID to node directory
-func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
+func (db *NodeDatabase) AddNode(ip string, id NodeID) {
 	if !strings.Contains(ip, "192.") {
 		if TestIP(ip) {
 			fmt.Println("adding node to database")
@@ -130,13 +133,13 @@ func TestIP(ip string) bool {
 }
 
 // LastPing - Get last ping time for node
-func (db *NodeDatabase) LastPing(id networking.NodeID) time.Time {
+func (db *NodeDatabase) LastPing(id NodeID) time.Time {
 	nodeIndex := db.GetNodeIndex(id)
 	return db.NodePingTimeDB[nodeIndex]
 }
 
 // GetNodeIndex - fetch/retrieve node index from node reference
-func (db *NodeDatabase) GetNodeIndex(id networking.NodeID) int {
+func (db *NodeDatabase) GetNodeIndex(id NodeID) int {
 	for k, v := range db.NodeRefDB {
 		if id == v {
 			return k

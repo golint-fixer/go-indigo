@@ -1,8 +1,14 @@
 package networking
 
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+)
+
 // ConnectionTypes - string array representing types of connections that can be
 // made on the network, as well as how to resolve them
-var ConnectionTypes = []string{"relay", "hostFull"}
+var ConnectionTypes = []string{"relay", "fullchain"}
 
 // ConnectionEventTypes - preset specifications of acceptable connection event types
 var ConnectionEventTypes = []string{"closed", "accepted", "attempted", "started"}
@@ -32,6 +38,13 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 }
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
-func (conn *Connection) ResolveData() {
+func (conn *Connection) ResolveData(b []byte) {
+	err := binary.Read(bytes.NewBuffer(b[:]), binary.BigEndian, &conn)
 
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	conn.AddEvent("accepted")
 }
