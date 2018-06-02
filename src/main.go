@@ -59,4 +59,7 @@ func main() {
 	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
 	fmt.Println("\nbest node: " + testDb.FindNode())
+
+	fmt.Println("nodelist size: ")
+	fmt.Println(len(testDb.NodeAddress))
 }
