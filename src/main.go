@@ -39,21 +39,27 @@ func main() {
 	consensus.WitnessTransaction(test, &witness)
 	testchain.AddTransaction(test)
 
-	//Dump chain
+	//Test chain serialization
 
-	b, err := json.MarshalIndent(testchain, "", "  ")
+	testchain.WriteChainToMemory("R:\\gocode\\src\\indogo\\src\\")
+
+	testDesChain := types.ReadChainFromMemory("R:\\gocode\\src\\indogo\\src\\")
+
+	//Dump deserialized chain
+
+	b, err := json.MarshalIndent(testDesChain, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 	os.Stdout.Write(b)
 
-	//Test nodeDB serialization methods
+	//Test nodeDB serialization
 
 	db.WriteDbToMemory("R:\\gocode\\src\\indogo\\src\\")
 
 	testDb := discovery.ReadDbFromMemory("R:\\gocode\\src\\indogo\\src\\")
 
-	//Dump read database
+	//Dump deserialized database
 
 	c, err := json.MarshalIndent(testDb, "", "  ")
 	if err != nil {
