@@ -15,9 +15,8 @@ import (
 
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
-	fmt.Println("attempting to relay")
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
-		if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
+		if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
 			//AddPortMapping(3000)
 			common.ThrowSuccess("tx passed checks; relaying")
 			txBytes := new(bytes.Buffer)
