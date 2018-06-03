@@ -16,15 +16,15 @@ import (
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
-		if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
-			//AddPortMapping(3000)
-			common.ThrowSuccess("tx passed checks; relaying")
-			txBytes := new(bytes.Buffer)
-			json.NewEncoder(txBytes).Encode(Tx)
-			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
-		} else {
-			common.ThrowWarning("transaction behind latest chain; fetch latest chain")
-		}
+		//if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
+		//AddPortMapping(3000)
+		common.ThrowSuccess("tx passed checks; relaying")
+		txBytes := new(bytes.Buffer)
+		json.NewEncoder(txBytes).Encode(Tx)
+		newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+		//} else {
+		//common.ThrowWarning("transaction behind latest chain; fetch latest chain")
+		//}
 	} else {
 		common.ThrowWarning("operation not permitted; transaction not witness")
 	}
