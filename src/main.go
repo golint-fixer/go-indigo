@@ -13,6 +13,11 @@ import (
 	"os"
 )
 
+/*
+	TODO: fix listen() loop (occurrs when node tries to listen for relays, but not other nodes relay)
+	TL;DR: add timeout() function
+*/
+
 var relayFlag = flag.Bool("relay", false, "used for debugging")
 var listenFlag = flag.Bool("listen", false, "used for debugging")
 
