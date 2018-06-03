@@ -170,7 +170,7 @@ func (conn *Connection) start() {
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
-	fmt.Printf("forming connection with node %s", destAddr)
+	fmt.Printf("forming connection with node %s; ", destAddr)
 	if common.StringInSlice(string(connType), ConnectionTypes) {
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data}
 		return &conn
