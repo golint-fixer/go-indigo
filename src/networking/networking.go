@@ -46,6 +46,14 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
 	newConnection(Db.SelfAddr, Db.FindNode(), "fullchain", chBytes.Bytes()).attempt()
 }
 
+// HostChain - host localized chain to forwarded port
+func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
+	AddPortMapping(3000)
+	chBytes := new(bytes.Buffer)
+	json.NewEncoder(chBytes).Encode(Ch)
+	newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+}
+
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
 	AddPortMapping(3000)
@@ -128,11 +136,27 @@ func (conn *Connection) attempt() {
 
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
 	connec.Write(connBytes.Bytes())                           // Write connection meta
+
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		conn.AddEvent("started")
 	}
+}
+
+func (conn *Connection) start() {
+	conn.AddEvent("started")
+	connBytes := new(bytes.Buffer)
+	json.NewEncoder(connBytes).Encode(conn)
+
+	ln, err := net.Listen("tcp", ":3000")
+	if err != nil {
+		fmt.Println(err) // Print panic meta
+		panic(err)       // Panic
+	}
+
+	connec, err := ln.Accept()      // Accept peer connection
+	connec.Write(connBytes.Bytes()) // Write connection meta
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
@@ -144,5 +168,3 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 	common.ThrowWarning("connection type not valid")
 	return nil
 }
-
-//https://systembash.com/a-simple-go-tcp-server-and-tcp-client/
