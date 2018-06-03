@@ -121,8 +121,6 @@ func handleReceivedBytes(b []byte) *Connection {
 	return &tempConn
 }
 
-// TODO: encode
-
 func (conn *Connection) attempt() {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
