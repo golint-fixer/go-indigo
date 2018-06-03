@@ -58,6 +58,11 @@ func ListenRelay() *types.Transaction {
 
 	conn, err := ln.Accept()
 
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
 	messsage, _, err := bufio.NewReader(conn).ReadLine()
 	tempCon.ResolveData(messsage)
 
@@ -83,6 +88,11 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 
 	message, _, err := bufio.NewReader(conn).ReadLine()
 	tempCon.ResolveData(message)
@@ -123,6 +133,8 @@ func (conn *Connection) attempt() {
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
+	fmt.Println("attempting to dial address: " + conn.DestNodeAddr + ":3000")
+
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
 	connec.Write(connBytes.Bytes())                           // Write connection meta
 
@@ -144,7 +156,13 @@ func (conn *Connection) start() {
 		panic(err)       // Panic
 	}
 
-	connec, err := ln.Accept()      // Accept peer connection
+	connec, err := ln.Accept() // Accept peer connection
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
 	connec.Write(connBytes.Bytes()) // Write connection meta
 }
 
