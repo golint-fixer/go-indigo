@@ -3,7 +3,7 @@ package types
 import (
 	"bytes"
 	"crypto"
-	"encoding/binary"
+	"encoding/json"
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
@@ -81,7 +81,7 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 // DecodeTxFromBytes - decode transaction from specified byte array, returning transaction
 func DecodeTxFromBytes(b []byte) *Transaction {
 	plTx := Transaction{}
-	err := binary.Read(bytes.NewBuffer(b[:]), binary.BigEndian, &plTx)
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plTx)
 
 	if err != nil {
 		fmt.Println(err)
