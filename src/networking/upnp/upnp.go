@@ -90,7 +90,7 @@ type Upnp struct {
 func (selfRef *Upnp) SearchGateway() (err error) {
 	defer func(err error) {
 		if errTemp := recover(); errTemp != nil {
-			log.Println("upnp模块报错了", errTemp)
+			log.Println("upnp module error", errTemp)
 			err = errTemp.(error)
 		}
 	}(err)
@@ -106,7 +106,7 @@ func (selfRef *Upnp) SearchGateway() (err error) {
 	if searchGateway.Send() {
 		return nil
 	}
-	return errors.New("未发现网关设备")
+	return errors.New("no gateway device found")
 }
 
 func (selfRef *Upnp) deviceStatus() {
@@ -144,7 +144,7 @@ func (selfRef *Upnp) ExternalIPAddr() (err error) {
 func (selfRef *Upnp) AddPortMapping(localPort, remotePort int, protocol string) (err error) {
 	defer func(err error) {
 		if errTemp := recover(); errTemp != nil {
-			log.Println("upnp模块报错了", errTemp)
+			log.Println("upnp module error", errTemp)
 			err = errTemp.(error)
 		}
 	}(err)
@@ -160,8 +160,7 @@ func (selfRef *Upnp) AddPortMapping(localPort, remotePort int, protocol string) 
 		return nil
 	}
 	selfRef.Active = false
-	// log.Println("添加一个端口映射失败")
-	return errors.New("添加一个端口映射失败")
+	return errors.New("failed to add port mapping")
 }
 
 // DelPortMapping -
@@ -170,7 +169,7 @@ func (selfRef *Upnp) DelPortMapping(remotePort int, protocol string) bool {
 	issuccess := delMapping.Send(remotePort, protocol)
 	if issuccess {
 		selfRef.MappingPort.delMapping(remotePort, protocol)
-		log.Println("删除了一个端口映射： remote:", remotePort)
+		log.Println("removed port mapping： remote:", remotePort)
 	}
 	return issuccess
 }
