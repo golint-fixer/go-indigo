@@ -65,10 +65,10 @@ func main() {
 	fmt.Println("nodelist size: ")
 	fmt.Println(len(testDb.NodeAddress))
 
-	if !*flag.Bool("relay", true, "") {
+	if *flag.Bool("peer", true, "") {
 		LatestTransaction := networking.ListenRelay()
 		fmt.Println(LatestTransaction)
-	} else if *flag.Bool("peer", true, "") {
+	} else if *flag.Bool("relay", true, "") {
 		fmt.Println("attempting to relay")
 		networking.Relay(test, testDb)
 	}
