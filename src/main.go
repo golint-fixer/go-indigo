@@ -13,7 +13,12 @@ import (
 	"os"
 )
 
+var relayFlag = flag.Bool("relay", false, "used for debugging")
+var listenFlag = flag.Bool("listen", false, "used for debugging")
+
 func main() {
+	flag.Parse()
+
 	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
 	db := discovery.NewNodeDatabase(selfID, "108.6.212.149") //Initializing net New NodeDatabase
@@ -65,10 +70,10 @@ func main() {
 	fmt.Println("nodelist size: ")
 	fmt.Println(len(testDb.NodeAddress))
 
-	if flag.Args()[0] == "listen" {
+	if *listenFlag == true {
 		LatestTransaction := networking.ListenRelay()
 		fmt.Println(LatestTransaction)
-	} else if flag.Args()[0] == "relay" {
+	} else if *relayFlag == true {
 		fmt.Println("attempting to relay")
 		networking.Relay(test, testDb)
 	}
