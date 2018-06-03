@@ -26,6 +26,7 @@ func AddPortMapping(port int) {
 
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
+	fmt.Println("relaying")
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
 		if ListenChain().Transactions[len(ListenChain().Transactions)].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
 			AddPortMapping(3000)
