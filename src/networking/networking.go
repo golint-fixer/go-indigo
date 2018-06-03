@@ -21,9 +21,9 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 			txBytes := new(bytes.Buffer)
 			json.NewEncoder(txBytes).Encode(Tx)
 			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+		} else {
+			common.ThrowWarning("transaction behind latest chain; fetch latest chain")
 		}
-	} else {
-		common.ThrowWarning("transaction behind latest chain; fetch latest chain")
 	}
 }
 
