@@ -56,8 +56,9 @@ func ListenRelay() *types.Transaction {
 
 	if err != nil {
 		fmt.Println(err)
-		panic(err)
+		//panic(err)
 	}
+
 	conn, err := ln.Accept()
 
 	messsage, _, err := bufio.NewReader(conn).ReadLine()
