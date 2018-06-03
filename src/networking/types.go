@@ -39,7 +39,7 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
 func (conn *Connection) ResolveData(b []byte) {
-	err := json.NewDecoder(bytes.NewReader(b)).Decode(*conn)
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(conn)
 
 	if err != nil {
 		fmt.Println(err)
