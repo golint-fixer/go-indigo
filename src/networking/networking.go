@@ -24,6 +24,8 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 		} else {
 			common.ThrowWarning("transaction behind latest chain; fetch latest chain")
 		}
+	} else {
+		common.ThrowWarning("operation not permitted; transaction not witness")
 	}
 }
 
@@ -133,7 +135,7 @@ func (conn *Connection) attempt() {
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
-	fmt.Println("attempting to dial address: " + conn.DestNodeAddr + ":3000")
+	common.ThrowWarning("attempting to dial address: " + conn.DestNodeAddr + ":3000")
 
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
 	connec.Write(connBytes.Bytes())                           // Write connection meta
