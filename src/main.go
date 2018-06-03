@@ -76,6 +76,7 @@ func main() {
 	fmt.Println(len(testDb.NodeAddress))
 
 	if *listenFlag == true {
+		fmt.Println("listening")
 		LatestTransaction := networking.ListenRelay()
 		fmt.Println(LatestTransaction)
 	} else if *relayFlag == true {
