@@ -2,11 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"indo-go/src/common"
 	"indo-go/src/consensus"
 	"indo-go/src/contracts"
 	"indo-go/src/core/types"
+	"indo-go/src/networking"
 	"indo-go/src/networking/discovery"
 	"os"
 )
@@ -62,4 +64,12 @@ func main() {
 
 	fmt.Println("nodelist size: ")
 	fmt.Println(len(testDb.NodeAddress))
+
+	if !*flag.Bool("relay", true, "") {
+		LatestTransaction := networking.ListenRelay()
+		fmt.Println(LatestTransaction)
+	} else if *flag.Bool("peer", true, "") {
+		fmt.Println("attempting to relay")
+		networking.Relay(test, testDb)
+	}
 }
