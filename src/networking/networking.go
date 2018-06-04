@@ -109,6 +109,11 @@ func ListenChain() *types.Chain {
 	return nil
 }
 
+// FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
+func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
+	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
+}
+
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
 func ListenRelayWithAdd(Ch *types.Chain, Wit *types.Witness, Db *discovery.NodeDatabase) {
 	tx := ListenRelay()
