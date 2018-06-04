@@ -198,7 +198,6 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
-	connec.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
