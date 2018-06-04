@@ -11,7 +11,7 @@ import (
 var ConnectionTypes = []string{"relay", "fullchain", "statichost", "statichostfullchain"}
 
 // ConnectionEventTypes - preset specifications of acceptable connection event types
-var ConnectionEventTypes = []string{"closed", "accepted", "attempted", "started"}
+var ConnectionEventTypes = []string{"closed", "accepted", "attempted", "started", "timed out"}
 
 // Connection - struct representing connection between two nodes
 type Connection struct {

@@ -198,6 +198,10 @@ func (conn *Connection) start() {
 	connec.Write(connBytes.Bytes()) // Write connection meta
 }
 
+func (conn *Connection) timeout() {
+	conn.AddEvent("timed out")
+}
+
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
 	fmt.Printf("forming connection with node %s; ", destAddr)
 	if common.StringInSlice(string(connType), ConnectionTypes) {
