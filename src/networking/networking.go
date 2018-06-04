@@ -111,7 +111,25 @@ func ListenChain() *types.Chain {
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
-	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
+	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
+
+	tempCon := Connection{}
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	message, _, err := bufio.NewReader(connec).ReadLine()
+	tempCon.ResolveData(message)
+
+	if tempCon.Type == "statichostfullchain" {
+		return types.DecodeChainFromBytes(tempCon.Data)
+	}
+
+	common.ThrowWarning("chain host not found")
+
+	return nil
 }
 
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
