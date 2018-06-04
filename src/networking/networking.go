@@ -14,6 +14,10 @@ import (
 	"time"
 )
 
+const (
+	timeout = 5
+)
+
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
@@ -61,7 +65,7 @@ func ListenRelay() *types.Transaction {
 	}
 
 	conn, err := ln.Accept()
-	conn.SetDeadline(time.Now().Add(5))
+	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
@@ -93,7 +97,7 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
-	conn.SetDeadline(time.Now().Add(5))
+	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
@@ -115,7 +119,7 @@ func ListenChain() *types.Chain {
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
-	connec.SetDeadline(time.Now().Add(5))
+	connec.SetDeadline(time.Now().Add(timeout))
 
 	tempCon := Connection{}
 
@@ -172,7 +176,7 @@ func (conn *Connection) attempt() {
 	common.ThrowWarning("attempting to dial address: " + conn.DestNodeAddr + ":3000")
 
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
-	connec.SetDeadline(time.Now().Add(5))                     // Set timeout
+	connec.SetDeadline(time.Now().Add(timeout))               // Set timeout
 	connec.Write(connBytes.Bytes())                           // Write connection meta
 
 	if err != nil {
@@ -194,7 +198,7 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
-	connec.SetDeadline(time.Now().Add(5))
+	connec.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
