@@ -13,13 +13,10 @@ import (
 	"os"
 )
 
-/*
-	TODO: fix listen() loop (occurrs when node tries to listen for relays, but not other nodes relay)
-	TL;DR: add timeout() function
-*/
-
 var relayFlag = flag.Bool("relay", false, "used for debugging")
 var listenFlag = flag.Bool("listen", false, "used for debugging")
+var hostFlag = flag.Bool("host", false, "used for debugging")
+var loopFlag = flag.Bool("forever", false, "used for debugging")
 
 func main() {
 	flag.Parse()
@@ -82,5 +79,8 @@ func main() {
 	} else if *relayFlag == true {
 		fmt.Println("attempting to relay")
 		networking.Relay(test, testDb)
+	} else if *hostFlag == true {
+		fmt.Println("attempting to host")
+		networking.HostChain(testDesChain, testDb, *loopFlag)
 	}
 }
