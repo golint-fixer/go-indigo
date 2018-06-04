@@ -16,6 +16,7 @@ import (
 var relayFlag = flag.Bool("relay", false, "used for debugging")
 var listenFlag = flag.Bool("listen", false, "used for debugging")
 var hostFlag = flag.Bool("host", false, "used for debugging")
+var fetchFlag = flag.Bool("fetch", false, "used for debugging")
 var loopFlag = flag.Bool("forever", false, "used for debugging")
 
 func main() {
@@ -82,5 +83,8 @@ func main() {
 	} else if *hostFlag == true {
 		fmt.Println("attempting to host")
 		networking.HostChain(testDesChain, testDb, *loopFlag)
+	} else if *fetchFlag == true {
+		fmt.Println("attempting to fetch chain")
+		networking.FetchChainWithAdd(testDesChain, testDb)
 	}
 }
