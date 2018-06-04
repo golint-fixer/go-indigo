@@ -40,7 +40,7 @@ func (db *NodeDatabase) getBestNode() string {
 		x := 0
 		bestMatchPingTime := db.NodePingTimeDB[0]
 		nodeIndex := 0
-		for x != len(db.NodeAddress) {
+		for x != len(db.NodeAddress)-1 {
 			if db.NodePingTimeDB[x].After(bestMatchPingTime) {
 				bestMatchPingTime = db.NodePingTimeDB[x]
 				nodeIndex = x
@@ -49,7 +49,18 @@ func (db *NodeDatabase) getBestNode() string {
 		}
 		return db.NodeAddress[nodeIndex]
 	}
-	return db.BootstrapNodeAddrs[0]
+	return db.getBootstrap()
+}
+
+func (db *NodeDatabase) getBootstrap() string {
+	x := 0
+	for x != len(db.BootstrapNodeAddrs)-1 {
+		if TestIP(db.BootstrapNodeAddrs[x]) {
+			return db.BootstrapNodeAddrs[x]
+		}
+		x++
+	}
+	return "1.1.1.1"
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
