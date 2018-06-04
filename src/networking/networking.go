@@ -148,6 +148,12 @@ func ListenChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
 	RelayChain(Ch, Db)
 }
 
+// FetchChainWithAdd - fetch chain, set local chain to result
+func FetchChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
+	*Ch = *FetchChain(Db)
+	Ch.WriteChainToMemory(common.GetCurrentDir())
+}
+
 func handleReceivedBytes(b []byte) *Connection {
 	tempConn := Connection{}
 	tempConn.ResolveData(b)
