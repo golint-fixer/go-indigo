@@ -44,11 +44,20 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
 }
 
 // HostChain - host localized chain to forwarded port
-func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
-	//AddPortMapping(3000)
-	chBytes := new(bytes.Buffer)
-	json.NewEncoder(chBytes).Encode(Ch)
-	newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
+	if Loop == true {
+		for {
+			//AddPortMapping(3000)
+			chBytes := new(bytes.Buffer)
+			json.NewEncoder(chBytes).Encode(Ch)
+			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+		}
+	} else {
+		//AddPortMapping(3000)
+		chBytes := new(bytes.Buffer)
+		json.NewEncoder(chBytes).Encode(Ch)
+		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+	}
 }
 
 // ListenRelay - listen for transaction relays, relay to full node or host
