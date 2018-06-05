@@ -54,14 +54,6 @@ func main() {
 
 	testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-	//Dump deserialized chain
-
-	b, err := json.MarshalIndent(testDesChain, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	os.Stdout.Write(b)
-
 	//Test nodeDB serialization
 
 	db.WriteDbToMemory(common.GetCurrentDir())
@@ -77,6 +69,14 @@ func main() {
 		fmt.Println("listening")
 		LatestTransaction := networking.ListenRelay()
 		fmt.Println(LatestTransaction)
+
+		// Dump fetched tx
+
+		b, err := json.MarshalIndent(LatestTransaction, "", "  ")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		os.Stdout.Write(b)
 	} else if *relayFlag == true {
 		fmt.Println("attempting to relay")
 		networking.Relay(test, testDb)
@@ -86,5 +86,13 @@ func main() {
 	} else if *fetchFlag == true {
 		fmt.Println("attempting to fetch chain")
 		networking.FetchChainWithAdd(testDesChain, testDb)
+
+		// Dump fetched chain
+
+		b, err := json.MarshalIndent(testDesChain, "", "  ")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		os.Stdout.Write(b)
 	}
 }
