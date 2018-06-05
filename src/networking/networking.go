@@ -90,6 +90,7 @@ func ListenRelay() *types.Transaction {
 	}
 
 	common.ThrowWarning("chain relay found; wanted transaction")
+	conn.Close()
 
 	return nil
 }
@@ -121,6 +122,7 @@ func ListenChain() *types.Chain {
 	}
 
 	common.ThrowWarning("transaction relay found; wanted chain")
+	conn.Close()
 
 	return nil
 }
@@ -146,6 +148,7 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	}
 
 	common.ThrowWarning("chain host not found")
+	connec.Close()
 
 	return nil
 }
@@ -216,6 +219,7 @@ func (conn *Connection) start() {
 	}
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
+	connec.Close()
 }
 
 func (conn *Connection) timeout() {
