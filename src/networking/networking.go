@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	timeout = 5000
+	timeout = 5 * time.Second
 )
 
 // Relay - push localized or received transaction to further node
