@@ -58,6 +58,8 @@ func main() {
 
 	db.WriteDbToMemory(common.GetCurrentDir())
 
+	fmt.Println("current dir: " + common.GetCurrentDir())
+
 	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
 	fmt.Println("\nbest node: " + testDb.FindNode())
