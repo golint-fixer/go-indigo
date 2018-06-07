@@ -19,9 +19,9 @@ const (
 	timeout = 5 * time.Second
 )
 
-func forward(conn net.Conn) {
+func forward() {
 	fmt.Println("attempting to forward requests")
-	forwarder.Forward(conn)
+	forwarder.StartServer()
 }
 
 // Relay - push localized or received transaction to further node
@@ -64,6 +64,7 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
+	forward()
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -74,7 +75,6 @@ func ListenRelay() *types.Transaction {
 	}
 
 	conn, err := ln.Accept()
-	forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -97,6 +97,7 @@ func ListenRelay() *types.Transaction {
 
 // ListenChain - listen for chain relays, relay to full node or host
 func ListenChain() *types.Chain {
+	forward()
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -106,7 +107,6 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
-	forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -129,8 +129,8 @@ func ListenChain() *types.Chain {
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
+	forward()
 	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
-	forward(connec)
 	connec.SetDeadline(time.Now().Add(timeout))
 
 	tempCon := Connection{}
@@ -200,6 +200,7 @@ func (conn *Connection) attempt() {
 }
 
 func (conn *Connection) start() {
+	forward()
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -211,7 +212,6 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
-	forward(connec)
 
 	if err != nil {
 		fmt.Println(err)
