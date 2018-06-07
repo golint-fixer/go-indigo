@@ -33,10 +33,31 @@ func forward() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Your external IP is:", ip)
+	fmt.Println("current node external ip:", ip)
 
 	// forward a port
-	err = d.Forward(3000, "upnp test")
+	err = d.Forward(3000, "resourceforwarding")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func removeMapping() {
+	// connect to router
+	d, err := upnp.Discover()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// discover external IP
+	ip, err := d.ExternalIP()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("current node external ip:", ip)
+
+	// forward a port
+	err = d.Clear(3000)
 	if err != nil {
 		log.Fatal(err)
 	}
