@@ -9,8 +9,10 @@ import (
 	"indo-go/src/consensus"
 	"indo-go/src/core/types"
 	"indo-go/src/networking/discovery"
-	"indo-go/src/networking/forwarder"
+	"io"
+	"log"
 	"net"
+	"os"
 	"reflect"
 	"time"
 )
@@ -19,9 +21,22 @@ const (
 	timeout = 5 * time.Second
 )
 
-func forward() {
-	fmt.Println("attempting to forward requests")
-	forwarder.StartServer()
+func forward(conn net.Conn) {
+	client, err := net.Dial("tcp", os.Args[2])
+	if err != nil {
+		log.Fatalf("Dial failed: %v", err)
+	}
+	log.Printf("Connected to localhost %v\n", conn)
+	go func() {
+		defer client.Close()
+		defer conn.Close()
+		io.Copy(client, conn)
+	}()
+	go func() {
+		defer client.Close()
+		defer conn.Close()
+		io.Copy(conn, client)
+	}()
 }
 
 // Relay - push localized or received transaction to further node
@@ -74,6 +89,7 @@ func ListenRelay() *types.Transaction {
 	}
 
 	conn, err := ln.Accept()
+	go forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -105,6 +121,7 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
+	go forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -208,6 +225,7 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
+	go forward(connec)
 
 	if err != nil {
 		fmt.Println(err)
