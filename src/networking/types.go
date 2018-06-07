@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"indo-go/src/networking/gateway"
 )
 
 // ConnectionTypes - string array representing types of connections that can be
@@ -47,4 +48,13 @@ func (conn *Connection) ResolveData(b []byte) {
 	}
 
 	conn.AddEvent("accepted")
+}
+
+// GetGateway - retrieve internal IP address of network gateway
+func GetGateway() string {
+	ip, err := gateway.DiscoverGateway()
+	if err != nil {
+		panic(err)
+	}
+	return ip.String()
 }

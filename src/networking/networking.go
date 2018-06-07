@@ -9,17 +9,37 @@ import (
 	"indo-go/src/consensus"
 	"indo-go/src/core/types"
 	"indo-go/src/networking/discovery"
+	"log"
 	"net"
 	"reflect"
 	"time"
+
+	upnp "github.com/NebulousLabs/go-upnp"
 )
 
 const (
 	timeout = 5 * time.Second
 )
 
-func forward(conn net.Conn) {
+func forward() {
+	// connect to router
+	d, err := upnp.Discover()
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	// discover external IP
+	ip, err := d.ExternalIP()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Your external IP is:", ip)
+
+	// forward a port
+	err = d.Forward(3000, "upnp test")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 // Relay - push localized or received transaction to further node
@@ -62,6 +82,8 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
+	forward()
+
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -72,7 +94,6 @@ func ListenRelay() *types.Transaction {
 	}
 
 	conn, err := ln.Accept()
-	go forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -95,6 +116,8 @@ func ListenRelay() *types.Transaction {
 
 // ListenChain - listen for chain relays, relay to full node or host
 func ListenChain() *types.Chain {
+	forward()
+
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -104,7 +127,6 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
-	go forward(conn)
 	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -127,26 +149,28 @@ func ListenChain() *types.Chain {
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
+	tempCon := Connection{}
+
 	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
 	connec.SetDeadline(time.Now().Add(timeout))
 
-	tempCon := Connection{}
-
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+		defer func() {
+			fmt.Println(err)
+		}()
+		connec.Close()
 
+		return nil
+	}
 	message, _, err := bufio.NewReader(connec).ReadLine()
+
 	tempCon.ResolveData(message)
 
 	if tempCon.Type == "statichostfullchain" {
 		return types.DecodeChainFromBytes(tempCon.Data)
 	}
 
-	common.ThrowWarning("chain host not found")
-	connec.Close()
-
+	common.ThrowWarning("chain not found")
 	return nil
 }
 
@@ -197,6 +221,8 @@ func (conn *Connection) attempt() {
 }
 
 func (conn *Connection) start() {
+	forward()
+
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -208,7 +234,6 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
-	go forward(connec)
 
 	if err != nil {
 		fmt.Println(err)
