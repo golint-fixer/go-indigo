@@ -64,7 +64,6 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
-	forward()
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -97,7 +96,6 @@ func ListenRelay() *types.Transaction {
 
 // ListenChain - listen for chain relays, relay to full node or host
 func ListenChain() *types.Chain {
-	forward()
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -129,7 +127,6 @@ func ListenChain() *types.Chain {
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
-	forward()
 	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
 	connec.SetDeadline(time.Now().Add(timeout))
 
@@ -200,7 +197,6 @@ func (conn *Connection) attempt() {
 }
 
 func (conn *Connection) start() {
-	forward()
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
