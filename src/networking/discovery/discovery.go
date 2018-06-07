@@ -60,7 +60,7 @@ func (db *NodeDatabase) getBootstrap() string {
 		}
 		x++
 	}
-	return db.BootstrapNodeAddrs[0]
+	return ""
 }
 
 // NewNodeDatabase - return new node database initialized with self ID

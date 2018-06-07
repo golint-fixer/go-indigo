@@ -9,6 +9,7 @@ import (
 	"indo-go/src/consensus"
 	"indo-go/src/core/types"
 	"indo-go/src/networking/discovery"
+	"indo-go/src/networking/forwarder"
 	"net"
 	"reflect"
 	"time"
@@ -18,11 +19,15 @@ const (
 	timeout = 5 * time.Second
 )
 
+func forward(conn net.Conn) {
+	fmt.Println("attempting to forward requests")
+	forwarder.Forward(conn)
+}
+
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
 		//if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
-		//AddPortMapping(3000)
 		common.ThrowSuccess("tx passed checks; relaying")
 		txBytes := new(bytes.Buffer)
 		json.NewEncoder(txBytes).Encode(Tx)
@@ -37,7 +42,6 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 
 // RelayChain - push localized or received chain to further node
 func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
-	//AddPortMapping(3000)
 	chBytes := new(bytes.Buffer)
 	json.NewEncoder(chBytes).Encode(Ch)
 	newConnection(Db.SelfAddr, Db.FindNode(), "fullchain", chBytes.Bytes()).attempt()
@@ -46,12 +50,12 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
 // HostChain - host localized chain to forwarded port
 func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 	if Loop == true {
-		//AddPortMapping(3000)
-		chBytes := new(bytes.Buffer)
-		json.NewEncoder(chBytes).Encode(Ch)
-		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+		for {
+			chBytes := new(bytes.Buffer)
+			json.NewEncoder(chBytes).Encode(Ch)
+			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+		}
 	} else {
-		//AddPortMapping(3000)
 		chBytes := new(bytes.Buffer)
 		json.NewEncoder(chBytes).Encode(Ch)
 		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
@@ -60,8 +64,6 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
-	//AddPortMapping(3000)
-
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -72,7 +74,8 @@ func ListenRelay() *types.Transaction {
 	}
 
 	conn, err := ln.Accept()
-	conn.SetDeadline(time.Now().Add(15 * time.Second))
+	forward(conn)
+	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
@@ -87,14 +90,13 @@ func ListenRelay() *types.Transaction {
 	}
 
 	common.ThrowWarning("chain relay found; wanted transaction")
+	conn.Close()
 
 	return nil
 }
 
 // ListenChain - listen for chain relays, relay to full node or host
 func ListenChain() *types.Chain {
-	//AddPortMapping(3000)
-
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -104,7 +106,8 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 	conn, err := ln.Accept()
-	conn.SetDeadline(time.Now().Add(15 * time.Second))
+	forward(conn)
+	conn.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
 		fmt.Println(err)
@@ -119,6 +122,7 @@ func ListenChain() *types.Chain {
 	}
 
 	common.ThrowWarning("transaction relay found; wanted chain")
+	conn.Close()
 
 	return nil
 }
@@ -126,7 +130,8 @@ func ListenChain() *types.Chain {
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
-	connec.SetDeadline(time.Now().Add(15 * time.Second))
+	forward(connec)
+	connec.SetDeadline(time.Now().Add(timeout))
 
 	tempCon := Connection{}
 
@@ -143,6 +148,7 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	}
 
 	common.ThrowWarning("chain host not found")
+	connec.Close()
 
 	return nil
 }
@@ -205,6 +211,7 @@ func (conn *Connection) start() {
 	}
 
 	connec, err := ln.Accept() // Accept peer connection
+	forward(connec)
 
 	if err != nil {
 		fmt.Println(err)
@@ -212,6 +219,7 @@ func (conn *Connection) start() {
 	}
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
+	connec.Close()
 }
 
 func (conn *Connection) timeout() {
