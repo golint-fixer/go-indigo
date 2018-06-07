@@ -9,10 +9,7 @@ import (
 	"indo-go/src/consensus"
 	"indo-go/src/core/types"
 	"indo-go/src/networking/discovery"
-	"io"
-	"log"
 	"net"
-	"os"
 	"reflect"
 	"time"
 )
@@ -22,21 +19,7 @@ const (
 )
 
 func forward(conn net.Conn) {
-	client, err := net.Dial("tcp", os.Args[2])
-	if err != nil {
-		log.Fatalf("Dial failed: %v", err)
-	}
-	log.Printf("Connected to localhost %v\n", conn)
-	go func() {
-		defer client.Close()
-		defer conn.Close()
-		io.Copy(client, conn)
-	}()
-	go func() {
-		defer client.Close()
-		defer conn.Close()
-		io.Copy(conn, client)
-	}()
+
 }
 
 // Relay - push localized or received transaction to further node
