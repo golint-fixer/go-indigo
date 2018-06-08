@@ -18,17 +18,23 @@ Want to contribute to the development of Indo? Submit a pull request or contact 
 
 ## Building
 
-Indo-go currently requires the latest build of the Go Language, of which can be downloaded [here](https://golang.org/). After installing the Go Language, clone the Indo-go repository into your go source code folder by running
+Indo-go currently requires the latest build of the Go Language, which can be downloaded [here](https://golang.org/). After installing the Go Language, get the indo-go package by running
 
-```git
-git clone https://github.com/MitsukoMegumi/indo-go.git
+```bash
+go get github.com/mitsukomegumi/indo-go
 ```
 
-in your git command line of choice (make sure to clone the Indo repo into your go source code folder).
+in your go-compatible command line of choice. The latest executable builds should be already be available, but feel free to build your own by running
+
+```bash
+go build
+```
+
+in the package's src folder.
 
 ### Dependencies
 
-Indo-go also requires golang's net package, of which can be acquired by running
+Indo-go requires golang's net package, of which can be acquired by running
 
 ```bash
 go get golang.org/x/net
