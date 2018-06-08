@@ -24,7 +24,7 @@ func main() {
 
 	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-	db := discovery.NewNodeDatabase(selfID, "108.6.212.149") //Initializing net New NodeDatabase
+	db := discovery.NewNodeDatabase(selfID, networking.GetExtIPAddr()) //Initializing net New NodeDatabase
 	db.WriteDbToMemory(common.GetCurrentDir())
 
 	//Creating new account:
