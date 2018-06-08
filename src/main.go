@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"indo-go/src/common"
-	"indo-go/src/consensus"
-	"indo-go/src/contracts"
-	"indo-go/src/core/types"
-	"indo-go/src/networking"
-	"indo-go/src/networking/discovery"
 	"os"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/consensus"
+	"github.com/mitsukomegumi/indo-go/src/contracts"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
+	"github.com/mitsukomegumi/indo-go/src/networking"
+	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 )
 
 var relayFlag = flag.Bool("relay", false, "used for debugging")

@@ -1,9 +1,10 @@
 package consensus
 
 import (
-	"indo-go/src/common"
-	"indo-go/src/core/types"
 	"reflect"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified

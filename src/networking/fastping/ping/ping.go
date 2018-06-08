@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
-	"indo-go/src/networking/fastping"
 	"net"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/mitsukomegumi/indo-go/src/networking/fastping"
 )
 
 type response struct {
