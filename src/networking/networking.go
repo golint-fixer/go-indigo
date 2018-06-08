@@ -14,7 +14,7 @@ import (
 	"reflect"
 	"time"
 
-	upnp "indo-go/src/networking/go-upnp"
+	upnp "github.com/NebulousLabs/go-upnp"
 )
 
 const (
