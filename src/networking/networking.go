@@ -63,6 +63,22 @@ func removeMapping() {
 	}
 }
 
+// GetExtIPAddr - retrieve the external IP address of the current machine
+func GetExtIPAddr() string {
+	// connect to router
+	d, err := upnp.Discover()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// discover external IP
+	ip, err := d.ExternalIP()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return ip
+}
+
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
