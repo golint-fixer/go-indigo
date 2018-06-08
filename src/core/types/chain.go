@@ -1,6 +1,8 @@
 package types
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"indo-go/src/common"
 	"indo-go/src/contracts"
@@ -57,4 +59,17 @@ func ReadChainFromMemory(path string) *Chain {
 		return tempChain
 	}
 	return nil
+}
+
+// DecodeChainFromBytes - decode chain from specified byte array, returning new chain
+func DecodeChainFromBytes(b []byte) *Chain {
+	plCh := Chain{}
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plCh)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	return &plCh
 }

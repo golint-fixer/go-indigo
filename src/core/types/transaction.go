@@ -1,7 +1,9 @@
 package types
 
 import (
+	"bytes"
 	"crypto"
+	"encoding/json"
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
@@ -74,4 +76,17 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 	}
 
 	return &Transaction{Data: txdata, Contract: contract, Weight: int(0), Verifications: int(0), SendingAccount: from}
+}
+
+// DecodeTxFromBytes - decode transaction from specified byte array, returning transaction
+func DecodeTxFromBytes(b []byte) *Transaction {
+	plTx := Transaction{}
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plTx)
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+
+	return &plTx
 }

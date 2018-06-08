@@ -3,20 +3,29 @@ package discovery
 import (
 	"fmt"
 	"indo-go/src/common"
-	"indo-go/src/networking"
 	"indo-go/src/networking/fastping"
 	"net"
 	"strings"
 	"time"
 )
 
+const (
+	bootStrapNode1Addr = "108.6.212.149"
+	bootStrapNode2Addr = "166.109.110.20"
+)
+
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
 type NodeDatabase struct {
-	NodeRefDB      []networking.NodeID
-	NodePingTimeDB []time.Time
-	NodeAddress    []string
-	SelfRef        networking.NodeID
+	NodeRefDB          []NodeID
+	NodePingTimeDB     []time.Time
+	NodeAddress        []string
+	SelfRef            NodeID
+	SelfAddr           string
+	BootstrapNodeAddrs []string
 }
+
+// NodeID - byte array identifying individual node
+type NodeID [64]byte
 
 // FindNode - find best node to connect to, returns ip address as string
 func (db *NodeDatabase) FindNode() string {
@@ -27,31 +36,47 @@ func (db *NodeDatabase) FindNode() string {
 }
 
 func (db *NodeDatabase) getBestNode() string {
+	if len(db.NodeAddress) > 0 {
+		x := 0
+		bestMatchPingTime := db.NodePingTimeDB[0]
+		nodeIndex := 0
+		for x != len(db.NodeAddress)-1 {
+			if db.NodePingTimeDB[x].After(bestMatchPingTime) {
+				bestMatchPingTime = db.NodePingTimeDB[x]
+				nodeIndex = x
+			}
+			x++
+		}
+		return db.NodeAddress[nodeIndex]
+	}
+	return db.getBootstrap()
+}
+
+func (db *NodeDatabase) getBootstrap() string {
 	x := 0
-	bestMatchPingTime := db.NodePingTimeDB[0]
-	nodeIndex := 0
-	for x != len(db.NodeAddress) {
-		if db.NodePingTimeDB[x].After(bestMatchPingTime) {
-			bestMatchPingTime = db.NodePingTimeDB[x]
-			nodeIndex = x
+	for x != len(db.BootstrapNodeAddrs)-1 {
+		if TestIP(db.BootstrapNodeAddrs[x]) {
+			return db.BootstrapNodeAddrs[x]
 		}
 		x++
 	}
-	return db.NodeAddress[nodeIndex]
+	return "108.6.212.149"
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
-func NewNodeDatabase(selfRef networking.NodeID) *NodeDatabase {
+func NewNodeDatabase(selfRef NodeID, selfAddr string) *NodeDatabase {
 	readDb := ReadDbFromMemory(common.GetCurrentDir())
 	if readDb != nil {
 		fmt.Println("read existing node database from mem")
 		return readDb
 	}
-	return &NodeDatabase{SelfRef: selfRef}
+	var tempArr []string
+	tempArr = append(tempArr, bootStrapNode1Addr)
+	return &NodeDatabase{SelfRef: selfRef, SelfAddr: selfAddr, BootstrapNodeAddrs: tempArr}
 }
 
 // AddNode - add specified IP address & ID to node directory
-func (db *NodeDatabase) AddNode(ip string, id networking.NodeID) {
+func (db *NodeDatabase) AddNode(ip string, id NodeID) {
 	if !strings.Contains(ip, "192.") {
 		if TestIP(ip) {
 			fmt.Println("adding node to database")
@@ -71,7 +96,7 @@ func (db *NodeDatabase) WriteDbToMemory(path string) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		common.ThrowSuccess("object written to memory")
+		common.ThrowSuccess("\nobject written to memory")
 	}
 }
 
@@ -120,13 +145,13 @@ func TestIP(ip string) bool {
 }
 
 // LastPing - Get last ping time for node
-func (db *NodeDatabase) LastPing(id networking.NodeID) time.Time {
+func (db *NodeDatabase) LastPing(id NodeID) time.Time {
 	nodeIndex := db.GetNodeIndex(id)
 	return db.NodePingTimeDB[nodeIndex]
 }
 
 // GetNodeIndex - fetch/retrieve node index from node reference
-func (db *NodeDatabase) GetNodeIndex(id networking.NodeID) int {
+func (db *NodeDatabase) GetNodeIndex(id NodeID) int {
 	for k, v := range db.NodeRefDB {
 		if id == v {
 			return k

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"indo-go/src/common"
 	"indo-go/src/consensus"
@@ -12,11 +13,19 @@ import (
 	"os"
 )
 
-func main() {
-	selfID := networking.NodeID{} //Testing init of NodeID (self reference)
+var relayFlag = flag.Bool("relay", false, "used for debugging")
+var listenFlag = flag.Bool("listen", false, "used for debugging")
+var hostFlag = flag.Bool("host", false, "used for debugging")
+var fetchFlag = flag.Bool("fetch", false, "used for debugging")
+var loopFlag = flag.Bool("forever", false, "used for debugging")
 
-	db := discovery.NewNodeDatabase(selfID) //Initializing net New NodeDatabase
-	db.AddNode("1.1.1.1", selfID)           //Adding node to database
+func main() {
+	flag.Parse()
+
+	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+
+	db := discovery.NewNodeDatabase(selfID, "108.6.212.149") //Initializing net New NodeDatabase
+	db.WriteDbToMemory(common.GetCurrentDir())
 
 	//Creating new account:
 
@@ -45,27 +54,47 @@ func main() {
 
 	testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-	//Dump deserialized chain
-
-	b, err := json.MarshalIndent(testDesChain, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	os.Stdout.Write(b)
-
 	//Test nodeDB serialization
 
 	db.WriteDbToMemory(common.GetCurrentDir())
 
+	fmt.Println("current dir: " + common.GetCurrentDir())
+
 	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
-	//Dump deserialized database
-
-	c, err := json.MarshalIndent(testDb, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	os.Stdout.Write(c)
-
 	fmt.Println("\nbest node: " + testDb.FindNode())
+
+	fmt.Println("nodelist size: ")
+	fmt.Println(len(testDb.NodeAddress))
+
+	if *listenFlag == true {
+		fmt.Println("listening")
+		LatestTransaction := networking.ListenRelay()
+		fmt.Println(LatestTransaction)
+
+		// Dump fetched tx
+
+		b, err := json.MarshalIndent(LatestTransaction, "", "  ")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		os.Stdout.Write(b)
+	} else if *relayFlag == true {
+		fmt.Println("attempting to relay")
+		networking.Relay(test, testDb)
+	} else if *hostFlag == true {
+		fmt.Println("attempting to host")
+		networking.HostChain(testDesChain, testDb, *loopFlag)
+	} else if *fetchFlag == true {
+		fmt.Println("attempting to fetch chain")
+		networking.FetchChainWithAdd(testDesChain, testDb)
+
+		// Dump fetched chain
+
+		b, err := json.MarshalIndent(testDesChain, "", "  ")
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		os.Stdout.Write(b)
+	}
 }

@@ -7,6 +7,16 @@ import (
 	"path/filepath"
 )
 
+// StringInSlice - checks if specified string is in array
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // WriteGob - create gob from specified object, at filePath
 func WriteGob(filePath string, object interface{}) error {
 	file, err := os.Create(filePath)
