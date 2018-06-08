@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"indo-go/src/common"
-	"indo-go/src/consensus"
-	"indo-go/src/core/types"
-	"indo-go/src/networking/discovery"
 	"log"
 	"net"
 	"reflect"
 	"time"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/consensus"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
+	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 
 	upnp "github.com/NebulousLabs/go-upnp"
 )

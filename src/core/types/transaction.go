@@ -7,9 +7,10 @@ import (
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
-	contracts "indo-go/src/contracts"
 	"sync/atomic"
 	"time"
+
+	contracts "github.com/mitsukomegumi/indo-go/src/contracts"
 )
 
 //Transaction - Data representing transfer of value (can be null), as well as the transfer of data via payload. May be triggered on conditions, set via smart contract.

@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"indo-go/src/common"
-	"indo-go/src/contracts"
 	"reflect"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/contracts"
 )
 
 // Chain - Connected collection of transactions

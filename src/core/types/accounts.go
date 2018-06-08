@@ -1,7 +1,7 @@
 package types
 
 import (
-	"indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/common"
 )
 
 // Account - represents account on the network

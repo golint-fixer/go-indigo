@@ -1,7 +1,7 @@
 package deprecated
 
 import (
-	"indo-go/src/core/types"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
 )
 
 // Nonce - hash symbolizing amount of processing power required to produce block

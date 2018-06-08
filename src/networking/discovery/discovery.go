@@ -2,11 +2,12 @@ package discovery
 
 import (
 	"fmt"
-	"indo-go/src/common"
-	"indo-go/src/networking/fastping"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/networking/fastping"
 )
 
 const (
