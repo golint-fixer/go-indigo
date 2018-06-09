@@ -283,10 +283,11 @@ func (conn *Connection) timeout() {
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
 	if destAddr == "" {
-		common.ThrowWarning("")
+		common.ThrowWarning("\ninitializing new peer connection")
 	} else {
 		fmt.Printf("forming connection with node %s; ", destAddr)
 	}
+	fmt.Printf("connection init at %s", common.GetCurrentTime())
 	if common.StringInSlice(string(connType), ConnectionTypes) {
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data}
 		return &conn
