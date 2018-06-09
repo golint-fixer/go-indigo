@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // StringInSlice - checks if specified string is in array
@@ -46,4 +47,9 @@ func GetCurrentDir() string {
 		log.Fatal(err)
 	}
 	return currentDir
+}
+
+// GetCurrentTime - Fetch current UTC time
+func GetCurrentTime() time.Time {
+	return time.Now().UTC()
 }

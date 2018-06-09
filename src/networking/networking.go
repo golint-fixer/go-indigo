@@ -81,14 +81,14 @@ func GetExtIPAddr() string {
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
-		//if ListenChain().Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
-		common.ThrowSuccess("tx passed checks; relaying")
-		txBytes := new(bytes.Buffer)
-		json.NewEncoder(txBytes).Encode(Tx)
-		newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
-		//} else {
-		//common.ThrowWarning("transaction behind latest chain; fetch latest chain")
-		//}
+		if FetchChain(Db).Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
+			common.ThrowSuccess("tx passed checks; relaying")
+			txBytes := new(bytes.Buffer)
+			json.NewEncoder(txBytes).Encode(Tx)
+			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+		} else {
+			common.ThrowWarning("transaction behind latest chain; fetch latest chain")
+		}
 	} else {
 		common.ThrowWarning("operation not permitted; transaction not witness")
 	}
@@ -144,6 +144,7 @@ func ListenRelay() *types.Transaction {
 
 	common.ThrowWarning("chain relay found; wanted transaction")
 	conn.Close()
+	ln.Close()
 
 	return nil
 }
@@ -175,6 +176,7 @@ func ListenChain() *types.Chain {
 
 	common.ThrowWarning("transaction relay found; wanted chain")
 	conn.Close()
+	ln.Close()
 
 	return nil
 }
@@ -272,6 +274,7 @@ func (conn *Connection) start() {
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
 	connec.Close()
+	ln.Close()
 }
 
 func (conn *Connection) timeout() {
@@ -279,7 +282,12 @@ func (conn *Connection) timeout() {
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
-	fmt.Printf("forming connection with node %s; ", destAddr)
+	if destAddr == "" {
+		common.ThrowWarning("\ninitializing new peer connection")
+	} else {
+		fmt.Printf("forming connection with node %s; ", destAddr)
+	}
+	fmt.Printf("connection init at %s", common.GetCurrentTime())
 	if common.StringInSlice(string(connType), ConnectionTypes) {
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data}
 		return &conn
