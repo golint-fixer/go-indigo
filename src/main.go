@@ -23,10 +23,28 @@ var loopFlag = flag.Bool("forever", false, "used for debugging")
 func main() {
 	flag.Parse()
 
-	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+	if *listenFlag || *hostFlag {
+		gd, err := networking.GetGateway()
+		ip, err := gd.ExternalIP()
 
-	db := discovery.NewNodeDatabase(selfID, networking.GetExtIPAddr()) //Initializing net New NodeDatabase
-	db.WriteDbToMemory(common.GetCurrentDir())
+		if err != nil {
+			panic(err)
+		}
+
+		networking.PrepareForConnection(gd)
+
+		selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+
+		db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+		db.WriteDbToMemory(common.GetCurrentDir())
+	} else {
+		selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+
+		db := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+		db.WriteDbToMemory(common.GetCurrentDir())
+	}
+
+	db := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
 	//Creating new account:
 

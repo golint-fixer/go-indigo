@@ -22,46 +22,44 @@ const (
 	timeout = 5 * time.Second
 )
 
-func forward() {
-	// connect to router
-	d, err := upnp.Discover()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func forward(GatewayDevice *upnp.IGD) {
 	// discover external IP
-	ip, err := d.ExternalIP()
+	ip, err := GatewayDevice.ExternalIP()
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("current node external ip:", ip)
 
 	// forward a port
-	err = d.Forward(3000, "resourceforwarding")
+	err = GatewayDevice.Forward(3000, "resourceforwarding")
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func removeMapping() {
-	// connect to router
-	d, err := upnp.Discover()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func removeMapping(GatewayDevice *upnp.IGD) {
 	// discover external IP
-	ip, err := d.ExternalIP()
+	ip, err := GatewayDevice.ExternalIP()
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("current node external ip:", ip)
 
-	// forward a port
-	err = d.Clear(3000)
+	// remove port mappings
+	err = GatewayDevice.Clear(3000)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// PrepareForConnection - forward all necessary ports to decrease redundant speed limitations
+func PrepareForConnection(GatewayDevice *upnp.IGD) {
+	forward(GatewayDevice)
+}
+
+// DisableConnections - remove all necessary port mappings
+func DisableConnections(GatewayDevice *upnp.IGD) {
+	removeMapping(GatewayDevice)
 }
 
 // GetExtIPAddr - retrieve the external IP address of the current machine
@@ -120,8 +118,6 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 
 // ListenRelay - listen for transaction relays, relay to full node or host
 func ListenRelay() *types.Transaction {
-	forward()
-
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -154,8 +150,6 @@ func ListenRelay() *types.Transaction {
 
 // ListenChain - listen for chain relays, relay to full node or host
 func ListenChain() *types.Chain {
-	forward()
-
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -259,8 +253,6 @@ func (conn *Connection) attempt() {
 }
 
 func (conn *Connection) start() {
-	forward()
-
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
