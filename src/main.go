@@ -25,11 +25,11 @@ func main() {
 	flag.Parse()
 
 	if *listenFlag || *hostFlag {
+		tsfRef := discovery.NodeID{}
+		eDb := discovery.NewNodeDatabase(tsfRef, "")
+		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
 
-		eDb := discovery.NodeDatabase{}
-		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", eDb)
-
-		if strings.Contains(rErr.Error(), "cannot find") {
+		if rErr != nil && strings.Contains(rErr.Error(), "cannot find") {
 			common.ThrowWarning(rErr.Error())
 
 			gd, err := networking.GetGateway()
@@ -39,12 +39,26 @@ func main() {
 				panic(err)
 			}
 
-			networking.PrepareForConnection(gd)
-
 			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
 			db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
 			db.WriteDbToMemory(common.GetCurrentDir())
+
+			if db.SelfForwrad == false {
+				networking.PrepareForConnection(gd, db)
+			}
+		}
+		if eDb.SelfForwrad == false {
+			fmt.Println(eDb.SelfForwrad)
+			gd, err := networking.GetGateway()
+
+			if err != nil {
+				panic(err)
+			}
+
+			networking.PrepareForConnection(gd, eDb)
+			eDb.WriteDbToMemory(common.GetCurrentDir())
+			fmt.Println(eDb.SelfForwrad)
 		}
 	} else {
 		selfID := discovery.NodeID{} //Testing init of NodeID (self reference)

@@ -22,6 +22,7 @@ type NodeDatabase struct {
 	NodeAddress        []string
 	SelfRef            NodeID
 	SelfAddr           string
+	SelfForwrad        bool
 	BootstrapNodeAddrs []string
 }
 

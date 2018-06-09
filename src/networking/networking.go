@@ -53,13 +53,16 @@ func removeMapping(GatewayDevice *upnp.IGD) {
 }
 
 // PrepareForConnection - forward all necessary ports to decrease redundant speed limitations
-func PrepareForConnection(GatewayDevice *upnp.IGD) {
+func PrepareForConnection(GatewayDevice *upnp.IGD, db *discovery.NodeDatabase) {
 	forward(GatewayDevice)
+	db.SelfForwrad = true
+	fmt.Println(db.SelfForwrad)
 }
 
 // DisableConnections - remove all necessary port mappings
-func DisableConnections(GatewayDevice *upnp.IGD) {
+func DisableConnections(GatewayDevice *upnp.IGD, db *discovery.NodeDatabase) {
 	removeMapping(GatewayDevice)
+	db.SelfForwrad = false
 }
 
 // GetExtIPAddr - retrieve the external IP address of the current machine
