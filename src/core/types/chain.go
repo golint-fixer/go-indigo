@@ -14,11 +14,11 @@ import (
 // Chain - Connected collection of transactions
 type Chain struct {
 	ParentContract *contracts.Contract `json:"parentcontract"`
-	Identifier     Identifier
+	Identifier     Identifier          `json:"identifier"`
 
-	NodeDb *discovery.NodeDatabase
+	NodeDb *discovery.NodeDatabase `json:"database"`
 
-	Transactions []*Transaction
+	Transactions []*Transaction `json:"transactions"`
 }
 
 // AddTransaction - Add transaction to specified chain object
