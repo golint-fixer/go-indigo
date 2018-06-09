@@ -49,11 +49,14 @@ go run main.go --host --forever
 Indo-go requires golang's net package, as well as NebulousLabs' go-upnp, which both can be acquired by running
 
 ```bash
-go get golang.org/x/net
-go get github.com/NebulousLabs/go-upnp
+go get -d github.com/mitsukomegumi/indo-go/src
 ```
 
-in any go-compatible terminal or command prompt.
+in any go-compatible terminal or command prompt after running
+
+```bash
+go get github.com/mitsukomegumi/indo-go
+```
 
 ## Code History
 
