@@ -34,21 +34,23 @@ in the package's src folder.
 
 ### Running
 
-Indo-go currently has 4 executable CLI flags used for testing and debugging:
+Indo-go currently has 5 executable CLI flags used for testing and debugging:
 
 ```bash
 go run main.go --relay
 go run main.go --listen
 go run main.go --fetch
 go run main.go --host
+go run main.go --host --forever
 ```
 
 ### Dependencies
 
-Indo-go requires golang's net package, of which can be acquired by running
+Indo-go requires golang's net package, as well as NebulousLabs' go-upnp, which both can be acquired by running
 
 ```bash
 go get golang.org/x/net
+go get github.com/NebulousLabs/go-upnp
 ```
 
 in any go-compatible terminal or command prompt.
