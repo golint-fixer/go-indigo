@@ -103,6 +103,7 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
 
 // HostChain - host localized chain to forwarded port
 func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
+	common.ThrowWarning("attempting to host chain with address " + Ch.NodeDb.SelfAddr)
 	if Loop == true {
 		for {
 			chBytes := new(bytes.Buffer)
@@ -228,7 +229,7 @@ func ListenChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
 func FetchChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
 	fChain := FetchChain(Db)
 	*Ch = *fChain
-	*Ch.NodeDb = *fChain.NodeDatabase
+	*Ch.NodeDb = *fChain.NodeDb
 	Ch.WriteChainToMemory(common.GetCurrentDir())
 	Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
 }
