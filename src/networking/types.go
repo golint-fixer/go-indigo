@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+
+	upnp "github.com/NebulousLabs/go-upnp"
 )
 
 // ConnectionTypes - string array representing types of connections that can be
@@ -47,4 +50,15 @@ func (conn *Connection) ResolveData(b []byte) {
 	}
 
 	conn.AddEvent("accepted")
+}
+
+// GetGateway - get reference to current network gateway device
+func GetGateway() (*upnp.IGD, error) {
+	// connect to router
+	d, err := upnp.Discover()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return d, err
 }

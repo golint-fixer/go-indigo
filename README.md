@@ -32,6 +32,17 @@ go build
 
 in the package's src folder.
 
+### Running
+
+Indo-go currently has 4 executable CLI flags used for testing and debugging:
+
+```bash
+go run main.go --relay
+go run main.go --listen
+go run main.go --fetch
+go run main.go --host
+```
+
 ### Dependencies
 
 Indo-go requires golang's net package, of which can be acquired by running

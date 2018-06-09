@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
 	"github.com/mitsukomegumi/indo-go/src/consensus"
@@ -23,50 +24,78 @@ var loopFlag = flag.Bool("forever", false, "used for debugging")
 func main() {
 	flag.Parse()
 
-	selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+	if *listenFlag || *hostFlag {
+		tsfRef := discovery.NodeID{}
+		eDb := discovery.NewNodeDatabase(tsfRef, "")
+		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
 
-	db := discovery.NewNodeDatabase(selfID, networking.GetExtIPAddr()) //Initializing net New NodeDatabase
-	db.WriteDbToMemory(common.GetCurrentDir())
+		gd, err := networking.GetGateway()
 
-	//Creating new account:
+		if err != nil {
+			panic(err)
+		}
 
-	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
-	account := types.NewAccount(accountAddress)
+		if rErr != nil && strings.Contains(rErr.Error(), "cannot find") {
+			common.ThrowWarning(rErr.Error())
 
-	//Creating witness data:
+			ip, err := gd.ExternalIP()
+			if err != nil {
+				panic(err)
+			}
 
-	signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
-	witness := types.NewWitness(1000, signature, 100)
+			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-	//Creating transaction, contract, chain
+			db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+			db.WriteDbToMemory(common.GetCurrentDir())
+		}
+		networking.PrepareForConnection(gd, eDb)
+	} else {
+		selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-	testcontract := new(contracts.Contract)
-	testchain := types.Chain{ParentContract: testcontract}
-	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
+		db := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+		db.WriteDbToMemory(common.GetCurrentDir())
+	}
 
-	//Adding witness, transaction to chain
+	db := discovery.ReadDbFromMemory(common.GetCurrentDir())
 
-	consensus.WitnessTransaction(test, &witness)
-	testchain.AddTransaction(test)
+	if *relayFlag || *hostFlag {
+		//Creating new account:
 
-	//Test chain serialization
+		accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
+		account := types.NewAccount(accountAddress)
 
-	testchain.WriteChainToMemory(common.GetCurrentDir())
+		//Creating witness data:
 
-	testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
+		signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
+		witness := types.NewWitness(1000, signature, 100)
 
-	//Test nodeDB serialization
+		//Creating transaction, contract, chain
 
-	db.WriteDbToMemory(common.GetCurrentDir())
+		testcontract := new(contracts.Contract)
+		testchain := types.Chain{ParentContract: testcontract}
+		test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, testcontract, nil)
 
-	fmt.Println("current dir: " + common.GetCurrentDir())
+		//Adding witness, transaction to chain
 
-	testDb := discovery.ReadDbFromMemory(common.GetCurrentDir())
+		consensus.WitnessTransaction(test, &witness)
+		testchain.AddTransaction(test)
 
-	fmt.Println("\nbest node: " + testDb.FindNode())
+		//Test chain serialization
 
-	fmt.Println("nodelist size: ")
-	fmt.Println(len(testDb.NodeAddress))
+		testchain.WriteChainToMemory(common.GetCurrentDir())
+
+		testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
+
+		if *relayFlag == true {
+			fmt.Println("attempting to relay")
+			networking.Relay(test, db)
+		} else if *hostFlag == true {
+			fmt.Println("attempting to host")
+			networking.HostChain(testDesChain, db, *loopFlag)
+		}
+	}
+
+	fmt.Println("\nbest node: " + db.FindNode())
 
 	if *listenFlag == true {
 		fmt.Println("listening")
@@ -80,15 +109,10 @@ func main() {
 			fmt.Println("error:", err)
 		}
 		os.Stdout.Write(b)
-	} else if *relayFlag == true {
-		fmt.Println("attempting to relay")
-		networking.Relay(test, testDb)
-	} else if *hostFlag == true {
-		fmt.Println("attempting to host")
-		networking.HostChain(testDesChain, testDb, *loopFlag)
 	} else if *fetchFlag == true {
+		testDesChain := types.Chain{}
 		fmt.Println("attempting to fetch chain")
-		networking.FetchChainWithAdd(testDesChain, testDb)
+		networking.FetchChainWithAdd(&testDesChain, db)
 
 		// Dump fetched chain
 
