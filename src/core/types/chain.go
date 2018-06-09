@@ -8,12 +8,15 @@ import (
 
 	"github.com/mitsukomegumi/indo-go/src/common"
 	"github.com/mitsukomegumi/indo-go/src/contracts"
+	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 )
 
 // Chain - Connected collection of transactions
 type Chain struct {
 	ParentContract *contracts.Contract `json:"parentcontract"`
 	Identifier     Identifier
+
+	NodeDb *discovery.NodeDatabase
 
 	Transactions []*Transaction
 }

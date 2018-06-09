@@ -226,8 +226,11 @@ func ListenChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
 
 // FetchChainWithAdd - fetch chain, set local chain to result
 func FetchChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
-	*Ch = *FetchChain(Db)
+	fChain := FetchChain(Db)
+	*Ch = *fChain
+	*Ch.NodeDb = *fChain.NodeDatabase
 	Ch.WriteChainToMemory(common.GetCurrentDir())
+	Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
 }
 
 func handleReceivedBytes(b []byte) *Connection {
