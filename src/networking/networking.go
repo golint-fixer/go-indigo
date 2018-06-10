@@ -299,6 +299,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 	message, _, rErr := bufio.NewReader(connec).ReadLine()
 
 	if rErr == nil {
+		fmt.Println("test")
 		tempCon := Connection{}
 		tempCon.ResolveData(message)
 
