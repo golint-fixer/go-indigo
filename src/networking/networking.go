@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	timeout = 100000 * time.Second
+	timeout = 5 * time.Second
 )
 
 func forward(GatewayDevice *upnp.IGD) {
@@ -148,7 +148,6 @@ func ListenRelay() *types.Transaction {
 
 	common.ThrowWarning("chain relay found; wanted transaction")
 	conn.Close()
-	ln.Close()
 
 	return nil
 }
@@ -180,7 +179,6 @@ func ListenChain() *types.Chain {
 
 	common.ThrowWarning("transaction relay found; wanted chain")
 	conn.Close()
-	ln.Close()
 
 	return nil
 }
