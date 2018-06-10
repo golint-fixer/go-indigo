@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	timeout = 5 * time.Second
+	timeout = 100000 * time.Second
 )
 
 func forward(GatewayDevice *upnp.IGD) {
