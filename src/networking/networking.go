@@ -140,6 +140,11 @@ func ListenRelay() *types.Transaction {
 	}
 
 	messsage, _, err := bufio.NewReader(conn).ReadLine()
+
+	if err != nil {
+		panic(err)
+	}
+
 	tempCon.ResolveData(messsage)
 
 	if tempCon.Type == "relay" {
@@ -279,7 +284,7 @@ func (conn *Connection) start() {
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
 	connec.Close()
-	//ln.Close()
+	ln.Close()
 }
 
 func (conn *Connection) timeout() {
