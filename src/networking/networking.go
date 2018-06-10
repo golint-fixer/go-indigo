@@ -290,15 +290,17 @@ func (conn *Connection) start(Ch *types.Chain) {
 		panic(err)
 	}
 
-	_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
-
-	if wErr != nil {
-		common.ThrowWarning(wErr.Error())
-	}
-
 	message, _, rErr := bufio.NewReader(connec).ReadLine()
 
-	if rErr == nil {
+	if rErr != nil {
+		common.ThrowWarning(rErr.Error())
+
+		_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
+
+		if wErr != nil {
+			common.ThrowWarning(wErr.Error())
+		}
+	} else {
 		fmt.Println("test")
 		tempCon := Connection{}
 		tempCon.ResolveData(message)
