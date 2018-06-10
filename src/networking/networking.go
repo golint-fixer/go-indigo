@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"reflect"
 	"time"
 
@@ -289,40 +290,45 @@ func (conn *Connection) start(Ch *types.Chain) {
 		panic(err)
 	}
 
-	/*
-		message, _, err := bufio.NewReader(connec).ReadLine()
+	_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
 
-		if err == nil {
-			tempCon := Connection{}
-			tempCon.ResolveData(message)
+	if wErr != nil {
+		common.ThrowWarning(wErr.Error())
+	}
 
-			if tempCon.Type == "fullchain" {
-				chain := types.DecodeChainFromBytes(tempCon.Data)
-				*Ch = *chain
+	message, _, rErr := bufio.NewReader(connec).ReadLine()
 
-				common.ThrowSuccess("found chain: ")
+	if rErr == nil {
+		tempCon := Connection{}
+		tempCon.ResolveData(message)
 
-				b, err := json.MarshalIndent(chain, "", "  ")
-				if err != nil {
-					fmt.Println("error:", err)
-				}
-				os.Stdout.Write(b)
-			} else if tempCon.Type == "relay" {
-				tx := types.DecodeTxFromBytes(tempCon.Data)
-				Ch.AddTransaction(tx)
+		if tempCon.Type == "fullchain" {
+			chain := types.DecodeChainFromBytes(tempCon.Data)
+			*Ch = *chain
 
-				common.ThrowSuccess("found transaction: ")
+			common.ThrowSuccess("found chain: ")
 
-				b, err := json.MarshalIndent(tx, "", "  ")
-				if err != nil {
-					fmt.Println("error:", err)
-				}
-				os.Stdout.Write(b)
+			b, err := json.MarshalIndent(chain, "", "  ")
+			if err != nil {
+				fmt.Println("error:", err)
 			}
-		}
-	*/
+			os.Stdout.Write(b)
+		} else if tempCon.Type == "relay" {
+			tx := types.DecodeTxFromBytes(tempCon.Data)
+			Ch.AddTransaction(tx)
 
-	connec.Write(connBytes.Bytes()) // Write connection meta
+			common.ThrowSuccess("found transaction: ")
+
+			b, err := json.MarshalIndent(tx, "", "  ")
+			if err != nil {
+				fmt.Println("error:", err)
+			}
+			os.Stdout.Write(b)
+		}
+	} else {
+		panic(rErr)
+	}
+
 	connec.Close()
 	ln.Close()
 }
