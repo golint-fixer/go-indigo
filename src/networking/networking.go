@@ -325,8 +325,6 @@ func (conn *Connection) start(Ch *types.Chain) {
 			}
 			os.Stdout.Write(b)
 		}
-	} else {
-		panic(rErr)
 	}
 
 	connec.Close()
