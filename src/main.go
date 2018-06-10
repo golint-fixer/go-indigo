@@ -57,6 +57,7 @@ func main() {
 	}
 
 	db := discovery.ReadDbFromMemory(common.GetCurrentDir())
+	fmt.Println("\nbest node: " + db.FindNode())
 
 	if *relayFlag || *hostFlag {
 		//Creating new account:
@@ -86,18 +87,16 @@ func main() {
 
 		testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-		if *relayFlag == true {
+		if *relayFlag {
 			fmt.Println("attempting to relay")
 			networking.Relay(test, db)
-		} else if *hostFlag == true {
+		} else if *hostFlag {
 			fmt.Println("attempting to host")
 			networking.HostChain(testDesChain, db, *loopFlag)
 		}
 	}
 
-	fmt.Println("\nbest node: " + db.FindNode())
-
-	if *listenFlag == true {
+	if *listenFlag {
 		fmt.Println("listening")
 		LatestTransaction := networking.ListenRelay()
 		fmt.Println(LatestTransaction)
@@ -109,7 +108,7 @@ func main() {
 			fmt.Println("error:", err)
 		}
 		os.Stdout.Write(b)
-	} else if *fetchFlag == true {
+	} else if *fetchFlag {
 		testDesChain := types.Chain{}
 		fmt.Println("attempting to fetch chain")
 		networking.FetchChainWithAdd(&testDesChain, db)

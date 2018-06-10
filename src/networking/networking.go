@@ -81,7 +81,9 @@ func GetExtIPAddr() string {
 // Relay - push localized or received transaction to further node
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
-		if FetchChain(Db).Transactions[len(ListenChain().Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) { // Causes infinite loop if no nodes serving chain
+		common.ThrowWarning("verifying tx on current chain")
+		fChain := FetchChain(Db)
+		if fChain.Transactions[len(fChain.Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
 			common.ThrowSuccess("tx passed checks; relaying")
 			txBytes := new(bytes.Buffer)
 			json.NewEncoder(txBytes).Encode(Tx)
@@ -111,12 +113,12 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 		for {
 			chBytes := new(bytes.Buffer)
 			json.NewEncoder(chBytes).Encode(Ch)
-			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch)
 		}
 	} else {
 		chBytes := new(bytes.Buffer)
 		json.NewEncoder(chBytes).Encode(Ch)
-		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start()
+		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch)
 	}
 }
 
@@ -192,7 +194,12 @@ func ListenChain() *types.Chain {
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	tempCon := Connection{}
 
-	connec, err := net.Dial("tcp", Db.FindNode()+":3000") // Connect to peer addr
+	Node := Db.FindNode()
+
+	connec, err := net.Dial("tcp", Node+":3000") // Connect to peer addr
+
+	common.ThrowWarning("attempting to connect to node " + Node + ":3000")
+
 	connec.SetDeadline(time.Now().Add(timeout))
 
 	if err != nil {
@@ -264,7 +271,7 @@ func (conn *Connection) attempt() {
 	}
 }
 
-func (conn *Connection) start() {
+func (conn *Connection) start(Ch *types.Chain) {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -281,6 +288,39 @@ func (conn *Connection) start() {
 		fmt.Println(err)
 		panic(err)
 	}
+
+	/*
+		message, _, err := bufio.NewReader(connec).ReadLine()
+
+		if err == nil {
+			tempCon := Connection{}
+			tempCon.ResolveData(message)
+
+			if tempCon.Type == "fullchain" {
+				chain := types.DecodeChainFromBytes(tempCon.Data)
+				*Ch = *chain
+
+				common.ThrowSuccess("found chain: ")
+
+				b, err := json.MarshalIndent(chain, "", "  ")
+				if err != nil {
+					fmt.Println("error:", err)
+				}
+				os.Stdout.Write(b)
+			} else if tempCon.Type == "relay" {
+				tx := types.DecodeTxFromBytes(tempCon.Data)
+				Ch.AddTransaction(tx)
+
+				common.ThrowSuccess("found transaction: ")
+
+				b, err := json.MarshalIndent(tx, "", "  ")
+				if err != nil {
+					fmt.Println("error:", err)
+				}
+				os.Stdout.Write(b)
+			}
+		}
+	*/
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
 	connec.Close()
