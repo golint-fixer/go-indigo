@@ -279,7 +279,7 @@ func (conn *Connection) start() {
 
 	connec.Write(connBytes.Bytes()) // Write connection meta
 	connec.Close()
-	ln.Close()
+	//ln.Close()
 }
 
 func (conn *Connection) timeout() {
