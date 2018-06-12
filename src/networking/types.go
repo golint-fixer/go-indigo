@@ -11,7 +11,7 @@ import (
 
 // ConnectionTypes - string array representing types of connections that can be
 // made on the network, as well as how to resolve them
-var ConnectionTypes = []string{"relay", "fullchain", "statichost", "statichostfullchain"}
+var ConnectionTypes = []string{"relay", "fullchain", "statichost", "statichostfullchain", "fetchchain"}
 
 // ConnectionEventTypes - preset specifications of acceptable connection event types
 var ConnectionEventTypes = []string{"closed", "accepted", "attempted", "started", "timed out"}

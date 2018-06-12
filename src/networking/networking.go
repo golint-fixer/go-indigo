@@ -193,13 +193,19 @@ func ListenChain() *types.Chain {
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
 func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
-	tempCon := Connection{}
-
 	Node := Db.FindNode()
+
+	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain"}
+
+	tempCon.AddEvent("started")
+	connBytes := new(bytes.Buffer)
+	json.NewEncoder(connBytes).Encode(tempCon)
 
 	connec, err := net.Dial("tcp", Node+":3000") // Connect to peer addr
 
 	common.ThrowWarning("attempting to connect to node " + Node + ":3000")
+
+	connec.Write(connBytes.Bytes())
 
 	connec.SetDeadline(time.Now().Add(timeout))
 
@@ -294,12 +300,6 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 	if rErr != nil {
 		common.ThrowWarning(rErr.Error())
-
-		_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
-
-		if wErr != nil {
-			common.ThrowWarning(wErr.Error())
-		}
 	} else {
 		fmt.Println("test")
 		tempCon := Connection{}
@@ -327,6 +327,12 @@ func (conn *Connection) start(Ch *types.Chain) {
 				fmt.Println("error:", err)
 			}
 			os.Stdout.Write(b)
+		} else if tempCon.Type == "fetchchain" {
+			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
+
+			if wErr != nil {
+				common.ThrowWarning(wErr.Error())
+			}
 		}
 	}
 
