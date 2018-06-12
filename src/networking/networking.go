@@ -301,7 +301,6 @@ func (conn *Connection) start(Ch *types.Chain) {
 	if rErr != nil {
 		common.ThrowWarning(rErr.Error())
 	} else {
-		fmt.Println("test")
 		tempCon := Connection{}
 		tempCon.ResolveData(message)
 
