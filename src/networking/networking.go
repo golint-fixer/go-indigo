@@ -197,6 +197,8 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain"}
 
+	fmt.Println("connection " + tempCon.Type)
+
 	tempCon.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(tempCon)
