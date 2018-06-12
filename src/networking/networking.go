@@ -317,6 +317,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 				fmt.Println("error:", err)
 			}
 			os.Stdout.Write(b)
+
+			Ch.WriteChainToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
 			Ch.AddTransaction(tx)
@@ -328,6 +330,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 				fmt.Println("error:", err)
 			}
 			os.Stdout.Write(b)
+
+			Ch.WriteChainToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "fetchchain" {
 			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
 
