@@ -151,10 +151,13 @@ func ListenRelay() *types.Transaction {
 	tempCon.ResolveData(messsage)
 
 	if tempCon.Type == "relay" {
+		conn.Close()
+		ln.Close()
 		return types.DecodeTxFromBytes(tempCon.Data)
 	}
 
 	common.ThrowWarning("chain relay found; wanted transaction")
+	ln.Close()
 	conn.Close()
 
 	return nil
@@ -182,11 +185,14 @@ func ListenChain() *types.Chain {
 	tempCon.ResolveData(message)
 
 	if tempCon.Type == "fullchain" {
+		conn.Close()
+		ln.Close()
 		return types.DecodeChainFromBytes(tempCon.Data)
 	}
 
 	common.ThrowWarning("transaction relay found; wanted chain")
 	conn.Close()
+	ln.Close()
 
 	return nil
 }
@@ -224,10 +230,12 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	tempCon.ResolveData(message)
 
 	if tempCon.Type == "statichostfullchain" {
+		connec.Close()
 		return types.DecodeChainFromBytes(tempCon.Data)
 	}
 
 	common.ThrowWarning("chain not found")
+	connec.Close()
 	return nil
 }
 
@@ -278,6 +286,8 @@ func (conn *Connection) attempt() {
 	} else {
 		conn.AddEvent("started")
 	}
+
+	connec.Close()
 }
 
 func (conn *Connection) start(Ch *types.Chain) {
@@ -333,6 +343,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "fetchchain" {
+			fmt.Println(types.DecodeChainFromBytes(conn.Data))
 			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
 
 			if wErr != nil {
