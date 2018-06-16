@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	timeout = 5 * time.Second
+	timeout = 15 * time.Second
 )
 
 func forward(GatewayDevice *upnp.IGD) {
@@ -213,10 +213,6 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 	common.ThrowWarning("attempting to connect to node " + Node + ":3000")
 
-	connec.Write(connBytes.Bytes())
-
-	connec.SetDeadline(time.Now().Add(timeout))
-
 	if err != nil {
 		defer func() {
 			fmt.Println(err)
@@ -225,7 +221,17 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 		return nil
 	}
+
+	connec.Write(connBytes.Bytes())
+	fmt.Printf("\n wrote connection meta: %s", connBytes.String())
+
+	connec.SetReadDeadline(time.Now().Add(timeout))
+
 	message, _, err := bufio.NewReader(connec).ReadLine()
+
+	if err != nil {
+		common.ThrowWarning("conn err: " + err.Error())
+	}
 
 	tempCon.ResolveData(message)
 
@@ -316,6 +322,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 		tempCon := Connection{}
 		tempCon.ResolveData(message)
 
+		fmt.Println("Connection type: " + tempCon.Type)
+
 		if tempCon.Type == "fullchain" {
 			chain := types.DecodeChainFromBytes(tempCon.Data)
 			*Ch = *chain
@@ -343,7 +351,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "fetchchain" {
-			fmt.Println(types.DecodeChainFromBytes(conn.Data))
+			fmt.Println("writing to connection")
+
 			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
 
 			if wErr != nil {

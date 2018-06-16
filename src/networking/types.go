@@ -42,14 +42,17 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
 func (conn *Connection) ResolveData(b []byte) {
-	err := json.NewDecoder(bytes.NewReader(b)).Decode(conn)
+	plConn := Connection{}
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plConn)
 
 	if err != nil {
 		fmt.Println(err)
 		panic(err)
 	}
 
-	conn.AddEvent("accepted")
+	plConn.AddEvent("accepted")
+
+	*conn = plConn
 }
 
 // GetGateway - get reference to current network gateway device
