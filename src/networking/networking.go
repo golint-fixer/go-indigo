@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -21,6 +22,7 @@ import (
 
 const (
 	timeout = 15 * time.Second
+	rDelay  = 2 * time.Second
 )
 
 func forward(GatewayDevice *upnp.IGD) {
@@ -225,15 +227,13 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 	connec.Write(connBytes.Bytes())
 	fmt.Printf("\n wrote connection meta: %s", connBytes.String())
 
-	connec.SetReadDeadline(time.Now().Add(timeout))
-
-	message, _, err := bufio.NewReader(connec).ReadLine()
+	message, err := ioutil.ReadAll(connec)
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
 	}
 
-	tempCon.ResolveData(message)
+	tempCon.ResolveData(common.DecompressBytes(message))
 
 	if tempCon.Type == "statichostfullchain" {
 		connec.Close()
@@ -353,9 +353,13 @@ func (conn *Connection) start(Ch *types.Chain) {
 		} else if tempCon.Type == "fetchchain" {
 			fmt.Println("writing to connection")
 
-			fmt.Println(connBytes.Bytes())
+			b := common.CompressBytes(connBytes.Bytes())
 
-			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
+			fmt.Println("comp bytes: ")
+
+			fmt.Println(b)
+
+			_, wErr := connec.Write(b) // Write connection meta
 
 			if wErr != nil {
 				common.ThrowWarning(wErr.Error())
