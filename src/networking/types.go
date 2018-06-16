@@ -42,12 +42,13 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
 func (conn *Connection) ResolveData(b []byte) {
+	fmt.Println(b)
 	plConn := Connection{}
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plConn)
 
 	if err != nil {
 		fmt.Println(err)
-		panic(err)
+		fmt.Println(plConn)
 	}
 
 	plConn.AddEvent("accepted")

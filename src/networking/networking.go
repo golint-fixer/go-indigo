@@ -322,7 +322,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 		tempCon := Connection{}
 		tempCon.ResolveData(message)
 
-		fmt.Println("Connection type: " + tempCon.Type)
+		fmt.Println("\nConnection type: " + tempCon.Type)
 
 		if tempCon.Type == "fullchain" {
 			chain := types.DecodeChainFromBytes(tempCon.Data)
@@ -352,6 +352,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "fetchchain" {
 			fmt.Println("writing to connection")
+
+			fmt.Println(connBytes.Bytes())
 
 			_, wErr := connec.Write(connBytes.Bytes()) // Write connection meta
 
