@@ -11,7 +11,7 @@ import (
 
 // ConnectionTypes - string array representing types of connections that can be
 // made on the network, as well as how to resolve them
-var ConnectionTypes = []string{"relay", "fullchain", "statichost", "statichostfullchain"}
+var ConnectionTypes = []string{"relay", "fullchain", "statichost", "statichostfullchain", "fetchchain"}
 
 // ConnectionEventTypes - preset specifications of acceptable connection event types
 var ConnectionEventTypes = []string{"closed", "accepted", "attempted", "started", "timed out"}
@@ -42,14 +42,17 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
 func (conn *Connection) ResolveData(b []byte) {
-	err := json.NewDecoder(bytes.NewReader(b)).Decode(conn)
+	plConn := Connection{}
+	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plConn)
 
 	if err != nil {
 		fmt.Println(err)
-		panic(err)
+		fmt.Println(plConn)
 	}
 
-	conn.AddEvent("accepted")
+	plConn.AddEvent("accepted")
+
+	*conn = plConn
 }
 
 // GetGateway - get reference to current network gateway device
