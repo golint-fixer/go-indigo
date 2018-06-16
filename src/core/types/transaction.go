@@ -26,6 +26,8 @@ type Transaction struct {
 
 	SendingAccount Account `json:"sending account"`
 
+	ChainVersion int `json:"chainver"`
+
 	hash atomic.Value
 	size atomic.Value
 	from atomic.Value

@@ -109,7 +109,7 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
 // HostChain - host localized chain to forwarded port
 func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 	if reflect.ValueOf(Ch.NodeDb).IsNil() {
-		*Ch = types.Chain{ParentContract: Ch.ParentContract, Identifier: Ch.Identifier, NodeDb: Db, Transactions: Ch.Transactions}
+		*Ch = types.Chain{ParentContract: Ch.ParentContract, Identifier: Ch.Identifier, NodeDb: Db, Transactions: Ch.Transactions, Version: Ch.Version}
 	}
 	common.ThrowWarning("attempting to host chain with address " + Ch.NodeDb.SelfAddr)
 	if Loop == true {

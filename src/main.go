@@ -9,6 +9,7 @@ import (
 
 	"github.com/mitsukomegumi/indo-go/src/common"
 	"github.com/mitsukomegumi/indo-go/src/consensus"
+	"github.com/mitsukomegumi/indo-go/src/contracts"
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
@@ -18,12 +19,13 @@ var relayFlag = flag.Bool("relay", false, "relay tx to node")
 var listenFlag = flag.Bool("listen", false, "listen for transaction relays")
 var hostFlag = flag.Bool("host", false, "host current copy of chain")
 var fetchFlag = flag.Bool("fetch", false, "fetch current copy of chain")
+var newChainFlag = flag.Bool("new", false, "create new chain")
 var loopFlag = flag.Bool("forever", false, "perform indefinitely")
 
 /*
 	TODO:
 		- test node db serialization
-		- add version to chain struct (increments on each transaction)
+		[DONE] - add version to chain struct (increments on each transaction)
 */
 
 func main() {
@@ -78,6 +80,7 @@ func main() {
 			//Creating transaction, contract, chain
 
 			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
+
 			test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 			//Adding witness, transaction to chain
@@ -125,6 +128,22 @@ func main() {
 			}
 			os.Stdout.Write(b)
 		}
+	} else if *newChainFlag {
+		fmt.Println("creating new chain")
+
+		tsfRef := discovery.NodeID{}
+
+		eDb := discovery.NewNodeDatabase(tsfRef, "")
+		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
+
+		if rErr != nil {
+			panic(rErr)
+		}
+
+		testcontract := new(contracts.Contract)
+		testchain := types.Chain{ParentContract: testcontract, Version: 0}
+
+		testchain.WriteChainToMemory(common.GetCurrentDir())
 	} else {
 		common.ThrowWarning("warning: no arguments found")
 	}
