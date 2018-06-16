@@ -281,7 +281,7 @@ func (conn *Connection) attempt() {
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
-	common.ThrowWarning("attempting to dial address: " + conn.DestNodeAddr + ":3000")
+	common.ThrowWarning("\nattempting to dial address: " + conn.DestNodeAddr + ":3000")
 
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
 	connec.SetDeadline(time.Now().Add(timeout))               // Set timeout
@@ -354,10 +354,6 @@ func (conn *Connection) start(Ch *types.Chain) {
 			fmt.Println("writing to connection")
 
 			b := common.CompressBytes(connBytes.Bytes())
-
-			fmt.Println("comp bytes: ")
-
-			fmt.Println(b)
 
 			_, wErr := connec.Write(b) // Write connection meta
 
