@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -146,5 +147,29 @@ func main() {
 		testchain.WriteChainToMemory(common.GetCurrentDir())
 	} else {
 		common.ThrowWarning("warning: no arguments found")
+		fmt.Println("available flags: ")
+		flag.PrintDefaults()
+
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("select flag: ")
+		text, _ := reader.ReadString('\n')
+
+		if strings.Contains(text, "relay") {
+			*relayFlag = true
+		} else if strings.Contains(text, "listen") {
+			*listenFlag = true
+		} else if strings.Contains(text, "host") {
+			*hostFlag = true
+		} else if strings.Contains(text, "fetch") {
+			*fetchFlag = true
+		} else if strings.Contains(text, "new") {
+			*newChainFlag = true
+		} else if strings.Contains(text, "forever") {
+			*loopFlag = true
+		}
+
+		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag {
+			main()
+		}
 	}
 }
