@@ -237,6 +237,11 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 	if tempCon.Type == "statichostfullchain" {
 		connec.Close()
+
+		rCh := types.DecodeChainFromBytes(tempCon.Data)
+
+		*Db = *rCh.NodeDb
+
 		return types.DecodeChainFromBytes(tempCon.Data)
 	}
 
@@ -337,6 +342,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 			os.Stdout.Write(b)
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
+			Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
 			Ch.AddTransaction(tx)

@@ -22,6 +22,7 @@ var hostFlag = flag.Bool("host", false, "host current copy of chain")
 var fetchFlag = flag.Bool("fetch", false, "fetch current copy of chain")
 var newChainFlag = flag.Bool("new", false, "create new chain")
 var loopFlag = flag.Bool("forever", false, "perform indefinitely")
+var fullChainFlag = flag.Bool("relaychain", false, "relay entire chain")
 
 /*
 	TODO:
@@ -32,7 +33,7 @@ var loopFlag = flag.Bool("forever", false, "perform indefinitely")
 func main() {
 	flag.Parse()
 
-	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag {
+	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag {
 		if *listenFlag || *hostFlag {
 			gd, err := networking.GetGateway()
 			tsfRef := discovery.NodeID{}
@@ -67,7 +68,7 @@ func main() {
 		db := discovery.ReadDbFromMemory(common.GetCurrentDir())
 		fmt.Println("\nbest node: " + db.FindNode())
 
-		if *relayFlag || *hostFlag {
+		if *relayFlag || *hostFlag || *fullChainFlag {
 			//Creating new account:
 
 			accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
@@ -98,6 +99,9 @@ func main() {
 			if *relayFlag {
 				fmt.Println("attempting to relay")
 				networking.Relay(test, db)
+			} else if *fullChainFlag {
+				fmt.Println("attempting to relay")
+				networking.RelayChain(testDesChain, db)
 			} else if *hostFlag {
 				fmt.Println("attempting to host")
 				networking.HostChain(testDesChain, db, *loopFlag)
@@ -166,6 +170,8 @@ func main() {
 			*newChainFlag = true
 		} else if strings.Contains(text, "forever") {
 			*loopFlag = true
+		} else if strings.Contains(text, "relaychain") {
+			*fullChainFlag = true
 		}
 
 		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag {
