@@ -62,6 +62,7 @@ func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 // WriteChainToMemory - create serialized instance of specified chain in specified path (string)
 func (RefChain Chain) WriteChainToMemory(path string) {
 	common.WriteGob(path+string(RefChain.Identifier)+"Chain.gob", RefChain)
+	RefChain.NodeDb.WriteDbToMemory(common.GetCurrentDir())
 }
 
 // ReadChainFromMemory - read serialized object of specified chain from specified path
