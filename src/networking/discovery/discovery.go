@@ -3,6 +3,7 @@ package discovery
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 
@@ -29,10 +30,14 @@ type NodeID [64]byte
 
 // FindNode - find best node to connect to, returns ip address as string
 func (db *NodeDatabase) FindNode() string {
-	if len(db.NodeAddress) == 0 {
-		ReadDbFromMemory(common.GetCurrentDir())
+	if !reflect.ValueOf(db).IsNil() {
+		if len(db.NodeAddress) == 0 {
+			ReadDbFromMemory(common.GetCurrentDir())
+		}
+		return db.getBestNode()
 	}
-	return db.getBestNode()
+	common.ThrowWarning("nil db")
+	return ""
 }
 
 func (db *NodeDatabase) getBestNode() string {
