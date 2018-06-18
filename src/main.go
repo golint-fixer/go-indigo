@@ -32,6 +32,9 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 */
 
 func main() {
+
+	common.ThrowWarning("test")
+
 	flag.Parse()
 
 	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
