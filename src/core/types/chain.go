@@ -19,12 +19,24 @@ type Chain struct {
 	NodeDb *discovery.NodeDatabase `json:"database"`
 
 	Transactions []*Transaction `json:"transactions"`
+
+	Version int `json:"version"`
 }
 
 // AddTransaction - Add transaction to specified chain object
 func (RefChain *Chain) AddTransaction(Transaction *Transaction) {
 	RefChain.Transactions = append(RefChain.Transactions, Transaction)
-	fmt.Println("Transaction added to chain")
+
+	if Transaction.ChainVersion == 0 {
+		RefChain.Version++
+		Transaction.ChainVersion = RefChain.Version
+	} else if Transaction.ChainVersion > RefChain.Version {
+		if (Transaction.ChainVersion - RefChain.Version) == 1 {
+			RefChain.Version = Transaction.ChainVersion
+		}
+	}
+
+	fmt.Println("transaction added to chain")
 }
 
 // FindUnverifiedTransactions - Browse chain for most recent unverified transactions
@@ -50,6 +62,7 @@ func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 // WriteChainToMemory - create serialized instance of specified chain in specified path (string)
 func (RefChain Chain) WriteChainToMemory(path string) {
 	common.WriteGob(path+string(RefChain.Identifier)+"Chain.gob", RefChain)
+	RefChain.NodeDb.WriteDbToMemory(common.GetCurrentDir())
 }
 
 // ReadChainFromMemory - read serialized object of specified chain from specified path
