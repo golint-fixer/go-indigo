@@ -23,6 +23,7 @@ var fetchFlag = flag.Bool("fetch", false, "fetch current copy of chain")
 var newChainFlag = flag.Bool("new", false, "create new chain")
 var loopFlag = flag.Bool("forever", false, "perform indefinitely")
 var fullChainFlag = flag.Bool("relaychain", false, "relay entire chain")
+var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
@@ -33,7 +34,7 @@ var fullChainFlag = flag.Bool("relaychain", false, "relay entire chain")
 func main() {
 	flag.Parse()
 
-	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag {
+	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
 		if *listenFlag || *hostFlag {
 			gd, err := networking.GetGateway()
 			tsfRef := discovery.NodeID{}
@@ -57,7 +58,9 @@ func main() {
 				db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
 				db.WriteDbToMemory(common.GetCurrentDir())
 			}
-			networking.PrepareForConnection(gd, eDb)
+			if !*noUpNPFlag {
+				networking.PrepareForConnection(gd, eDb)
+			}
 		} else {
 			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
@@ -172,9 +175,11 @@ func main() {
 			*loopFlag = true
 		} else if strings.Contains(text, "relaychain") {
 			*fullChainFlag = true
+		} else if strings.Contains(text, "noupnp") {
+			*noUpNPFlag = true
 		}
 
-		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag {
+		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
 			main()
 		}
 	}
