@@ -5,11 +5,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -144,13 +146,17 @@ func ListenRelay() *types.Transaction {
 		panic(err)
 	}
 
-	messsage, _, err := bufio.NewReader(conn).ReadLine()
+	message, err := ioutil.ReadAll(conn)
+
+	if err != nil {
+		common.ThrowWarning("conn err: " + err.Error())
+	}
 
 	if err != nil {
 		panic(err)
 	}
 
-	tempCon.ResolveData(messsage)
+	tempCon.ResolveData(message)
 
 	if tempCon.Type == "relay" {
 		conn.Close()
@@ -183,7 +189,12 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 
-	message, _, err := bufio.NewReader(conn).ReadLine()
+	message, err := ioutil.ReadAll(conn)
+
+	if err != nil {
+		common.ThrowWarning("conn err: " + err.Error())
+	}
+
 	tempCon.ResolveData(message)
 
 	if tempCon.Type == "fullchain" {
@@ -320,6 +331,12 @@ func (conn *Connection) start(Ch *types.Chain) {
 	}
 
 	message, _, rErr := bufio.NewReader(connec).ReadLine()
+
+	if strings.Contains(rErr.Error(), "EOF") {
+		var buf bytes.Buffer
+		io.Copy(&buf, connec)
+		message = buf.Bytes()
+	}
 
 	if rErr != nil {
 		common.ThrowWarning(rErr.Error())

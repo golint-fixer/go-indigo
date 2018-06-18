@@ -23,10 +23,11 @@ var fetchFlag = flag.Bool("fetch", false, "fetch current copy of chain")
 var newChainFlag = flag.Bool("new", false, "create new chain")
 var loopFlag = flag.Bool("forever", false, "perform indefinitely")
 var fullChainFlag = flag.Bool("relaychain", false, "relay entire chain")
+var registerNode = flag.Bool("regnode", false, "registers node")
 
 /*
 	TODO:
-		- test node db serialization
+		[DONE] - test node db serialization
 		[DONE] - add version to chain struct (increments on each transaction)
 */
 
@@ -139,16 +140,34 @@ func main() {
 		tsfRef := discovery.NodeID{}
 
 		eDb := discovery.NewNodeDatabase(tsfRef, "")
-		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
-
-		if rErr != nil {
-			panic(rErr)
-		}
+		eDb.WriteDbToMemory(common.GetCurrentDir())
 
 		testcontract := new(contracts.Contract)
-		testchain := types.Chain{ParentContract: testcontract, Version: 0}
+		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
 
 		testchain.WriteChainToMemory(common.GetCurrentDir())
+	} else if *registerNode {
+		common.ThrowWarning("registering node")
+
+		gd, err := networking.GetGateway()
+
+		if err != nil {
+			panic(err)
+		}
+
+		ip, err := gd.ExternalIP()
+
+		if err != nil {
+			panic(err)
+		}
+
+		db := discovery.ReadDbFromMemory(common.GetCurrentDir())
+		ch := networking.FetchChain(db)
+
+		db.AddNode(ip, discovery.NodeID{})
+		*ch.NodeDb = *db
+
+		networking.RelayChain(ch, db)
 	} else {
 		common.ThrowWarning("warning: no arguments found")
 		fmt.Println("available flags: ")
@@ -172,9 +191,11 @@ func main() {
 			*loopFlag = true
 		} else if strings.Contains(text, "relaychain") {
 			*fullChainFlag = true
+		} else if strings.Contains(text, "regnode") {
+			*registerNode = true
 		}
 
-		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag {
+		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag || *registerNode || *fullChainFlag {
 			main()
 		}
 	}

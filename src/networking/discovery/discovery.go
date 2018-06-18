@@ -12,7 +12,6 @@ import (
 
 const (
 	bootStrapNode1Addr = "108.6.212.149"
-	bootStrapNode2Addr = "166.109.110.20"
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
