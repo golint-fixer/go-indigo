@@ -11,7 +11,6 @@ import (
 	"net"
 	"os"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -330,20 +329,32 @@ func (conn *Connection) start(Ch *types.Chain) {
 		panic(err)
 	}
 
-	message, _, rErr := bufio.NewReader(connec).ReadLine()
+	buf := new([]byte)
 
-	if strings.Contains(rErr.Error(), "EOF") {
-		var buf bytes.Buffer
-		io.Copy(&buf, connec)
-		message = buf.Bytes()
+	for {
+		fmt.Println("test")
+		message, _, rErr := bufio.NewReader(connec).ReadLine()
+		fmt.Println(message)
+
+		if rErr != nil {
+			if err != io.EOF {
+				common.ThrowWarning("read error: " + err.Error())
+			}
+			break
+		}
+
+		*buf = append(*buf, message[:]...)
+		fmt.Println(buf)
 	}
+
+	fmt.Println(buf)
+
+	tempCon := Connection{}
+	rErr := tempCon.ResolveData(*buf)
 
 	if rErr != nil {
 		common.ThrowWarning(rErr.Error())
 	} else {
-		tempCon := Connection{}
-		tempCon.ResolveData(message)
-
 		fmt.Println("\nConnection type: " + tempCon.Type)
 
 		if tempCon.Type == "fullchain" {
@@ -357,6 +368,8 @@ func (conn *Connection) start(Ch *types.Chain) {
 				fmt.Println("error:", err)
 			}
 			os.Stdout.Write(b)
+
+			common.ThrowSuccess("found node: " + Ch.NodeDb.NodeAddress[len(Ch.NodeDb.NodeAddress)-1])
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 			Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
@@ -400,7 +413,7 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 	} else {
 		fmt.Printf("forming connection with node %s; ", destAddr)
 	}
-	fmt.Printf("connection init at %s", common.GetCurrentTime())
+	fmt.Printf("connection init at %s\n", common.GetCurrentTime())
 	if common.StringInSlice(string(connType), ConnectionTypes) {
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data}
 		return &conn
