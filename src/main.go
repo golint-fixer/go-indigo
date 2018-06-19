@@ -60,6 +60,7 @@ func main() {
 				db.WriteDbToMemory(common.GetCurrentDir())
 			}
 			if !*noUpNPFlag {
+				fmt.Println("configuring upnp devices")
 				networking.PrepareForConnection(gd, eDb)
 			}
 		} else {
