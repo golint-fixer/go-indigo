@@ -39,7 +39,12 @@ func main() {
 		if *listenFlag || *hostFlag {
 			gd, err := networking.GetGateway()
 			tsfRef := discovery.NodeID{}
-			eDb := discovery.NewNodeDatabase(tsfRef, "")
+			eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+			if err != nil {
+				panic(err)
+			}
+
 			rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
 
 			if err != nil {
@@ -56,7 +61,12 @@ func main() {
 
 				selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-				db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+				db, err := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+
+				if err != nil {
+					panic(err)
+				}
+
 				db.WriteDbToMemory(common.GetCurrentDir())
 			}
 			if !*noUpNPFlag {
@@ -66,11 +76,21 @@ func main() {
 		} else {
 			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-			db := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+			db, err := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+
+			if err != nil {
+				panic(err)
+			}
+
 			db.WriteDbToMemory(common.GetCurrentDir())
 		}
 
-		db := discovery.ReadDbFromMemory(common.GetCurrentDir())
+		db, err := discovery.ReadDbFromMemory(common.GetCurrentDir())
+
+		if err != nil {
+			panic(err)
+		}
+
 		fmt.Println("\nbest node: " + db.FindNode())
 
 		if *relayFlag || *hostFlag || *fullChainFlag {
@@ -143,7 +163,12 @@ func main() {
 
 		tsfRef := discovery.NodeID{}
 
-		eDb := discovery.NewNodeDatabase(tsfRef, "")
+		eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+		if err != nil {
+			panic(err)
+		}
+
 		eDb.WriteDbToMemory(common.GetCurrentDir())
 
 		testcontract := new(contracts.Contract)
@@ -165,8 +190,17 @@ func main() {
 			panic(err)
 		}
 
-		db := discovery.ReadDbFromMemory(common.GetCurrentDir())
-		ch := networking.FetchChain(db)
+		db, err := discovery.ReadDbFromMemory(common.GetCurrentDir())
+
+		if err != nil {
+			panic(err)
+		}
+
+		ch, err := networking.FetchChain(db)
+
+		if err != nil {
+			panic(err)
+		}
 
 		db.AddNode(ip, discovery.NodeID{})
 		*ch.NodeDb = *db
