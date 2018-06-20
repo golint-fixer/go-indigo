@@ -5,12 +5,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -331,23 +331,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 	buf := new([]byte)
 
-	for {
-		fmt.Println("test")
-		message, _, rErr := bufio.NewReader(connec).ReadLine()
-		fmt.Println(message)
-
-		if rErr != nil {
-			if err != io.EOF {
-				common.ThrowWarning("read error: " + err.Error())
-			}
-			break
-		}
-
-		*buf = append(*buf, message[:]...)
-		fmt.Println(buf)
-	}
-
-	fmt.Println(buf)
+	*buf = resolveConnection(connec)
 
 	tempCon := Connection{}
 	rErr := tempCon.ResolveData(*buf)
@@ -405,6 +389,44 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 func (conn *Connection) timeout() {
 	conn.AddEvent("timed out")
+}
+
+func resolveConnection(conn net.Conn) []byte {
+	testResolution, err := resolveSimple(conn)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "EOF") {
+			overflowResolution, err := resolveOverflow(conn)
+
+			if err != nil {
+				panic(err)
+			}
+			return overflowResolution
+		}
+		panic(err)
+	}
+
+	return testResolution
+}
+
+func resolveOverflow(conn net.Conn) ([]byte, error) {
+	data, err := ioutil.ReadAll(conn)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return data, nil
+}
+
+func resolveSimple(conn net.Conn) ([]byte, error) {
+	data, _, err := bufio.NewReader(conn).ReadLine()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
