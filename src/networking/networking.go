@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -83,28 +84,40 @@ func GetExtIPAddr() string {
 }
 
 // Relay - push localized or received transaction to further node
-func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) {
+func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) error {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
 		common.ThrowWarning("verifying tx on current chain")
-		fChain := FetchChain(Db)
+		fChain, err := FetchChain(Db)
+
+		if err != nil {
+			return err
+		}
+
 		if fChain.Transactions[len(fChain.Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
 			common.ThrowSuccess("tx passed checks; relaying")
 			txBytes := new(bytes.Buffer)
 			json.NewEncoder(txBytes).Encode(Tx)
 			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
-		} else {
-			common.ThrowWarning("transaction behind latest chain; fetch latest chain")
+
+			return nil
 		}
-	} else {
-		common.ThrowWarning("operation not permitted; transaction not witness")
+		return errors.New("transaction behind latest chain; fetch latest chain")
 	}
+	return errors.New("operation not permitted; transaction not witnessed")
 }
 
 // RelayChain - push localized or received chain to further node
-func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) {
+func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) error {
 	chBytes := new(bytes.Buffer)
-	json.NewEncoder(chBytes).Encode(Ch)
+	err := json.NewEncoder(chBytes).Encode(Ch)
+
+	if err != nil {
+		return err
+	}
+
 	newConnection(Db.SelfAddr, Db.FindNode(), "fullchain", chBytes.Bytes()).attempt()
+
+	return nil
 }
 
 // HostChain - host localized chain to forwarded port
@@ -210,7 +223,7 @@ func ListenChain() *types.Chain {
 }
 
 // FetchChain - get current chain from best node; get from nodes with statichostfullchain connection type
-func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
+func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 	Node := Db.FindNode()
 
 	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain"}
@@ -231,7 +244,7 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 		}()
 		connec.Close()
 
-		return nil
+		return nil, err
 	}
 
 	connec.Write(connBytes.Bytes())
@@ -241,6 +254,7 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
+		return nil, err
 	}
 
 	tempCon.ResolveData(common.DecompressBytes(message))
@@ -252,12 +266,12 @@ func FetchChain(Db *discovery.NodeDatabase) *types.Chain {
 
 		*Db = *rCh.NodeDb
 
-		return types.DecodeChainFromBytes(tempCon.Data)
+		return types.DecodeChainFromBytes(tempCon.Data), nil
 	}
 
 	common.ThrowWarning("chain not found")
 	connec.Close()
-	return nil
+	return nil, errors.New("chain not found")
 }
 
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
@@ -277,12 +291,19 @@ func ListenChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
 }
 
 // FetchChainWithAdd - fetch chain, set local chain to result
-func FetchChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) {
-	fChain := FetchChain(Db)
+func FetchChainWithAdd(Ch *types.Chain, Db *discovery.NodeDatabase) error {
+	fChain, err := FetchChain(Db)
+
+	if err != nil {
+		return err
+	}
+
 	*Ch = *fChain
 	*Ch.NodeDb = *fChain.NodeDb
 	Ch.WriteChainToMemory(common.GetCurrentDir())
 	Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
+
+	return nil
 }
 
 func handleReceivedBytes(b []byte) *Connection {
@@ -291,7 +312,7 @@ func handleReceivedBytes(b []byte) *Connection {
 	return &tempConn
 }
 
-func (conn *Connection) attempt() {
+func (conn *Connection) attempt() error {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -299,16 +320,18 @@ func (conn *Connection) attempt() {
 	common.ThrowWarning("\nattempting to dial address: " + conn.DestNodeAddr + ":3000")
 
 	connec, err := net.Dial("tcp", conn.DestNodeAddr+":3000") // Connect to peer addr
-	connec.SetDeadline(time.Now().Add(timeout))               // Set timeout
-	connec.Write(connBytes.Bytes())                           // Write connection meta
 
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		conn.AddEvent("started")
+		return err
 	}
 
+	connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
+	connec.Write(connBytes.Bytes())             // Write connection meta
+
+	conn.AddEvent("started")
 	connec.Close()
+
+	return nil
 }
 
 func (conn *Connection) start(Ch *types.Chain) {
