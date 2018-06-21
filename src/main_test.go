@@ -13,42 +13,26 @@ import (
 )
 
 func TestNewChain(t *testing.T) {
-	tsfRef := discovery.NodeID{}
-
-	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+	err := NewChain()
 
 	if err != nil {
-		t.Errorf("Node database creation failed: %s", err.Error())
-	}
-
-	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
-
-	if wErr != nil {
-		t.Errorf("Node database serialization failed: %s", err.Error())
-	}
-
-	testcontract := new(contracts.Contract)
-	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
-	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
-
-	if sErr != nil {
-		t.Errorf("Chain serialization failed: %s", sErr.Error())
+		t.Errorf(err.Error())
 	}
 }
 
-func NewChain() {
+func NewChain() error {
 	tsfRef := discovery.NodeID{}
 
 	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
 
 	if wErr != nil {
-		panic(wErr)
+		return wErr
 	}
 
 	testcontract := new(contracts.Contract)
@@ -56,8 +40,10 @@ func NewChain() {
 	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
 
 	if sErr != nil {
-		panic(sErr)
+		return sErr
 	}
+
+	return nil
 }
 
 func TestRelayTx(t *testing.T) {
