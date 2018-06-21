@@ -99,7 +99,11 @@ func TestRelayTx(t *testing.T) {
 	testchain.WriteChainToMemory(common.GetCurrentDir())
 
 	fmt.Println("attempting to relay")
-	networking.Relay(test, db)
+	rErr := networking.Relay(test, db)
+
+	if rErr != nil {
+		t.Errorf(rErr.Error())
+	}
 }
 
 func TestRelayChain(t *testing.T) {
