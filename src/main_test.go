@@ -1,0 +1,133 @@
+package main
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/indo-go/src/consensus"
+	"github.com/mitsukomegumi/indo-go/src/contracts"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
+	"github.com/mitsukomegumi/indo-go/src/networking"
+	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+)
+
+func TestNewChain(t *testing.T) {
+	tsfRef := discovery.NodeID{}
+
+	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+	if err != nil {
+		t.Errorf("Node database creation failed: %s", err.Error())
+	}
+
+	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
+
+	if wErr != nil {
+		t.Errorf("Node database serialization failed: %s", err.Error())
+	}
+
+	testcontract := new(contracts.Contract)
+	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
+	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
+
+	if sErr != nil {
+		t.Errorf("Chain serialization failed: %s", sErr.Error())
+	}
+}
+
+func NewChain() {
+	tsfRef := discovery.NodeID{}
+
+	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+	if err != nil {
+		panic(err)
+	}
+
+	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
+
+	if wErr != nil {
+		panic(wErr)
+	}
+
+	testcontract := new(contracts.Contract)
+	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
+	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
+
+	if sErr != nil {
+		panic(sErr)
+	}
+}
+
+func TestRelayTx(t *testing.T) {
+	tsfRef := discovery.NodeID{}
+
+	db, err := discovery.NewNodeDatabase(tsfRef, "")
+
+	if err != nil {
+		t.Errorf("Node database creation failed: %s", err.Error())
+	}
+
+	//Creating new account:
+
+	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
+	account := types.NewAccount(accountAddress)
+
+	//Creating witness data:
+
+	signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
+	witness := types.NewWitness(1000, signature, 100)
+
+	//Creating transaction, contract, chain
+
+	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+	if err != nil {
+		t.Errorf("Node database creation failed: %s", err.Error())
+	}
+
+	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
+
+	if wErr != nil {
+		t.Errorf("Node database serialization failed: %s", err.Error())
+	}
+
+	testcontract := new(contracts.Contract)
+	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
+	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
+
+	if sErr != nil {
+		t.Errorf("Chain serialization failed: %s", sErr.Error())
+	}
+
+	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+
+	//Adding witness, transaction to chain
+
+	consensus.WitnessTransaction(test, &witness)
+	testchain.AddTransaction(test)
+
+	//Test chain serialization
+
+	testchain.WriteChainToMemory(common.GetCurrentDir())
+
+	fmt.Println("attempting to relay")
+	networking.Relay(test, db)
+}
+
+func TestRelayChain(t *testing.T) {
+	NewChain()
+	chain := types.ReadChainFromMemory(common.GetCurrentDir())
+	db, err := discovery.ReadDbFromMemory(common.GetCurrentDir())
+
+	if err != nil {
+		t.Errorf("Node database deserialization failed: %s", err.Error())
+	}
+
+	rErr := networking.RelayChain(chain, db)
+
+	if rErr != nil {
+		t.Errorf("Chain relay failed: %s", err.Error())
+	}
+}
