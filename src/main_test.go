@@ -22,32 +22,6 @@ func TestNewChain(t *testing.T) {
 	}
 }
 
-func NewChain() error {
-	tsfRef := discovery.NodeID{}
-
-	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
-
-	if err != nil {
-		return err
-	}
-
-	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
-
-	if wErr != nil {
-		return wErr
-	}
-
-	testcontract := new(contracts.Contract)
-	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
-	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
-
-	if sErr != nil {
-		return sErr
-	}
-
-	return nil
-}
-
 func TestRelayTx(t *testing.T) {
 	tsfRef := discovery.NodeID{}
 
@@ -149,4 +123,30 @@ func TestFetchChain(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	os.Stdout.Write(b)
+}
+
+func NewChain() error {
+	tsfRef := discovery.NodeID{}
+
+	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+	if err != nil {
+		return err
+	}
+
+	wErr := eDb.WriteDbToMemory(common.GetCurrentDir())
+
+	if wErr != nil {
+		return wErr
+	}
+
+	testcontract := new(contracts.Contract)
+	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
+	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
+
+	if sErr != nil {
+		return sErr
+	}
+
+	return nil
 }
