@@ -328,17 +328,16 @@ func (conn *Connection) attempt() error {
 	connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
 	connec.Write(connBytes.Bytes())             // Write connection meta
 
+	fmt.Println(connBytes.Bytes())
+
 	conn.AddEvent("started")
+
 	connec.Close()
 
 	return nil
 }
 
 func (conn *Connection) start(Ch *types.Chain) {
-	conn.AddEvent("started")
-	connBytes := new(bytes.Buffer)
-	json.NewEncoder(connBytes).Encode(conn)
-
 	ln, err := net.Listen("tcp", ":3000")
 	if err != nil {
 		fmt.Println(err) // Print panic meta
@@ -352,12 +351,33 @@ func (conn *Connection) start(Ch *types.Chain) {
 		panic(err)
 	}
 
+	finished := make(chan bool)
+
+	go handleRequest(connec, conn, Ch, finished)
+
+	<-finished
+
+	//connec.Close()
+	ln.Close()
+}
+
+func (conn *Connection) timeout() {
+	conn.AddEvent("timed out")
+}
+
+func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished chan bool) {
+	conn.AddEvent("started")
+	connBytes := new(bytes.Buffer)
+	json.NewEncoder(connBytes).Encode(conn)
+
 	buf := new([]byte)
 
 	*buf = resolveConnection(connec)
 
 	tempCon := Connection{}
 	rErr := tempCon.ResolveData(*buf)
+
+	fmt.Println(buf)
 
 	if rErr != nil {
 		common.ThrowWarning(rErr.Error())
@@ -405,13 +425,6 @@ func (conn *Connection) start(Ch *types.Chain) {
 			}
 		}
 	}
-
-	connec.Close()
-	ln.Close()
-}
-
-func (conn *Connection) timeout() {
-	conn.AddEvent("timed out")
 }
 
 func resolveConnection(conn net.Conn) []byte {

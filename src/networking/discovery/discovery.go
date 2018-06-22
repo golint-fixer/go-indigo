@@ -73,7 +73,7 @@ func NewNodeDatabase(selfRef NodeID, selfAddr string) (*NodeDatabase, error) {
 	readDb, err := ReadDbFromMemory(common.GetCurrentDir())
 
 	if err != nil {
-		if !strings.Contains(err.Error(), "no such file") {
+		if !strings.Contains(err.Error(), "no such file") && !strings.Contains(err.Error(), "cannot find the file") {
 			return nil, err
 		}
 	}
