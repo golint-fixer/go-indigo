@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -120,4 +122,31 @@ func TestRelayChain(t *testing.T) {
 	if rErr != nil {
 		t.Errorf("Chain relay failed: %s", err.Error())
 	}
+}
+
+func TestFetchChain(t *testing.T) {
+	selfRef := discovery.NodeID{}
+	selfAddr := ""
+
+	db, err := discovery.NewNodeDatabase(selfRef, selfAddr)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	testDesChain := types.Chain{}
+	fmt.Println("attempting to fetch chain")
+	err = networking.FetchChainWithAdd(&testDesChain, db)
+
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	// Dump fetched chain
+
+	b, err := json.MarshalIndent(testDesChain, "", "  ")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	os.Stdout.Write(b)
 }
