@@ -14,6 +14,7 @@ import (
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 var relayFlag = flag.Bool("relay", false, "relay tx to node")
@@ -38,7 +39,16 @@ func main() {
 
 	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
 		if *listenFlag || *hostFlag {
-			gd, err := networking.GetGateway()
+			common.ThrowWarning("starting host")
+
+			var gd *upnp.IGD
+
+			var err error
+
+			if !*noUpNPFlag {
+				gd, err = networking.GetGateway()
+			}
+
 			tsfRef := discovery.NodeID{}
 			eDb, err := discovery.NewNodeDatabase(tsfRef, "")
 
@@ -55,9 +65,17 @@ func main() {
 			if rErr != nil && strings.Contains(rErr.Error(), "cannot find") {
 				common.ThrowWarning(rErr.Error())
 
-				ip, err := gd.ExternalIP()
-				if err != nil {
-					panic(err)
+				var ip string
+
+				var err error
+
+				if gd != nil {
+					ip, err = gd.ExternalIP()
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					ip, err = networking.GetExtIPAddrNoUpNP()
 				}
 
 				selfID := discovery.NodeID{} //Testing init of NodeID (self reference)

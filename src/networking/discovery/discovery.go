@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	bootStrapNode1Addr = "108.6.212.149"
+	bootStrapNode1Addr = ""
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
@@ -65,7 +65,7 @@ func (db *NodeDatabase) getBootstrap() string {
 		}
 		x++
 	}
-	return "108.6.212.149"
+	return ""
 }
 
 // NewNodeDatabase - return new node database initialized with self ID

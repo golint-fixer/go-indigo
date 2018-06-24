@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	upnp "github.com/NebulousLabs/go-upnp"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 // ConnectionTypes - string array representing types of connections that can be

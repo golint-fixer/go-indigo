@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"reflect"
 	"strings"
@@ -20,7 +21,7 @@ import (
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 
-	upnp "github.com/NebulousLabs/go-upnp"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 const (
@@ -82,6 +83,23 @@ func GetExtIPAddr() string {
 		log.Fatal(err)
 	}
 	return ip
+}
+
+// GetExtIPAddrNoUpNP - retrieve the external IP address of the current machine w/o upnp
+func GetExtIPAddrNoUpNP() (string, error) {
+	ip := make([]byte, 100)
+	resp, err := http.Get("http://checkip.amazonaws.com/")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	_, err = resp.Body.Read(ip)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(ip[:len(ip)]), nil
 }
 
 // Relay - push localized or received transaction to further node
