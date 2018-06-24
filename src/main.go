@@ -30,7 +30,7 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 	TODO:
 		[DONE] - test node db serialization
 		[DONE] - add version to chain struct (increments on each transaction)
-		- add unit testing
+		[DONE] - add unit testing
 */
 
 func main() {

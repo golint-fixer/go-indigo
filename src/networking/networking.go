@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -248,7 +249,15 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 	}
 
 	connec.Write(connBytes.Bytes())
-	fmt.Printf("\n wrote connection meta: %s", connBytes.String())
+	fmt.Printf("\nwrote connection meta: %s", connBytes.String())
+
+	fmt.Println(connBytes.Bytes())
+
+	finished := make(chan bool)
+
+	go waitForClose(connec, finished)
+
+	<-finished
 
 	message, err := ioutil.ReadAll(connec)
 
@@ -325,15 +334,20 @@ func (conn *Connection) attempt() error {
 		return err
 	}
 
-	connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
-	connec.Write(connBytes.Bytes())             // Write connection meta
+	//connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
+	connec.Write(connBytes.Bytes()) // Write connection meta
 
-	fmt.Println(connBytes.Bytes())
+	finished := make(chan bool)
 
-	conn.AddEvent("started")
+	fmt.Println("started")
+
+	go waitForClose(connec, finished)
+
+	<-finished
+
+	fmt.Println("finished")
 
 	connec.Close()
-
 	return nil
 }
 
@@ -353,11 +367,15 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 	finished := make(chan bool)
 
-	go handleRequest(connec, conn, Ch, finished)
+	data := make(chan []byte, 1000000)
+
+	go handleRequest(connec, data, conn, Ch, finished)
 
 	<-finished
 
-	//connec.Close()
+	connec.Write([]byte("finished"))
+
+	connec.Close()
 	ln.Close()
 }
 
@@ -365,22 +383,109 @@ func (conn *Connection) timeout() {
 	conn.AddEvent("timed out")
 }
 
-func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished chan bool) {
+func waitForClose(conn net.Conn, finished chan bool) {
+	ch := make(chan []byte)
+	eCh := make(chan error)
+
+	// Start a goroutine to read from our net connection
+	go func(ch chan []byte, eCh chan error) {
+		for {
+			// try to read the data
+			data := make([]byte, 512)
+			_, err := conn.Read(data)
+			if err != nil {
+				// send an error if it's encountered
+				eCh <- err
+				return
+			}
+			// send data if we read some.
+			ch <- data
+		}
+	}(ch, eCh)
+
+	ticker := time.Tick(time.Second)
+	// continuously read from the connection
+	for {
+		select {
+		// This case means we recieved data on the connection
+		case data := <-ch:
+			fmt.Println("found data: " + string(data[:24]))
+			finished <- true
+		// This case means we got an error and the goroutine has finished
+		case err := <-eCh:
+			fmt.Println(err)
+			break
+		// This will timeout on the read.
+		case <-ticker:
+			panic(errors.New("timeout"))
+		}
+	}
+}
+
+func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *types.Chain, finished chan bool) {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
-	buf := new([]byte)
+	finishedBool := make(chan bool)
+	finishedAgainBool := make(chan bool)
 
-	*buf = resolveConnection(connec)
+	fmt.Println("resolving connection")
 
-	tempCon := Connection{}
-	rErr := tempCon.ResolveData(*buf)
+	go resolveConnection(connec, data, finishedBool)
 
+	<-finishedBool
+
+	fmt.Println(data)
+
+	fmt.Println(<-data)
+
+	go finalizeResolvedConnection(data, finishedAgainBool, Ch, connBytes, connec) // call from resolveconnection routine
+
+	<-finishedAgainBool
+
+	finished <- true
+}
+
+func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
+	finishedBool := make(chan bool)
+	finishedSecondary := make(chan bool)
+
+	var err error
+
+	go resolveSimple(buf, conn, finishedBool, err)
+
+	<-finishedBool
+
+	if err != nil {
+		fmt.Println("found error resolving data via simple; trying complex resolution")
+		if strings.Contains(err.Error(), "EOF") {
+			go resolveOverflow(conn, buf, finishedSecondary, err)
+
+			if err != nil {
+				panic(err)
+			}
+
+			<-finishedSecondary
+			finished <- true
+		}
+		panic(err)
+	}
+
+	fmt.Println("data resolved successfully via simple resolution: " + string(<-buf))
 	fmt.Println(buf)
+	finished <- true
+}
+
+func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, connBytes *bytes.Buffer, connec net.Conn) {
+	tempCon := Connection{}
+	fmt.Println("test: " + string(<-data))
+	rErr := tempCon.ResolveData(<-data)
 
 	if rErr != nil {
-		common.ThrowWarning(rErr.Error())
+		common.ThrowWarning("error while resolving connection data: " + rErr.Error())
+
+		finished <- true
 	} else {
 		fmt.Println("\nConnection type: " + tempCon.Type)
 
@@ -400,6 +505,8 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 			Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
+
+			finished <- true
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
 			Ch.AddTransaction(tx)
@@ -413,6 +520,8 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 			os.Stdout.Write(b)
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
+
+			finished <- true
 		} else if tempCon.Type == "fetchchain" {
 			fmt.Println("writing to connection")
 
@@ -423,46 +532,65 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 			if wErr != nil {
 				common.ThrowWarning(wErr.Error())
 			}
+
+			finished <- true
 		}
 	}
 }
 
-func resolveConnection(conn net.Conn) []byte {
-	testResolution, err := resolveSimple(conn)
+func resolveOverflow(conn net.Conn, buf chan []byte, finished chan bool, err error) {
+	// make a temporary bytes var to read from the connection
+	tmp := make([]byte, 1024)
+	// make 0 length data bytes (since we'll be appending)
+	data := make([]byte, 0)
+	// keep track of full length read
+	length := 0
 
-	if err != nil {
-		if strings.Contains(err.Error(), "EOF") {
-			overflowResolution, err := resolveOverflow(conn)
-
-			if err != nil {
-				panic(err)
+	// loop through the connection stream, appending tmp to data
+	for {
+		// read to the tmp var
+		n, err := conn.Read(tmp)
+		if err != nil {
+			// log if not normal error
+			if err != io.EOF {
+				finished <- true
 			}
-			return overflowResolution
+			break
 		}
-		panic(err)
+
+		// append read data to full data
+		data = append(data, tmp[:n]...)
+
+		// update total read var
+		length += n
 	}
 
-	return testResolution
+	fmt.Println(data)
+
+	buf <- data
+
+	finished <- true
 }
 
-func resolveOverflow(conn net.Conn) ([]byte, error) {
-	data, err := ioutil.ReadAll(conn)
+func resolveSimple(buf chan []byte, conn net.Conn, finished chan bool, err error) {
+	err = errors.New("EOF")
+	for err != nil && strings.Contains(err.Error(), "EOF") {
+		fmt.Println("resolving simple data")
+		data, _, _ := bufio.NewReader(conn).ReadLine()
 
-	if err != nil {
-		panic(err)
+		tempCon := Connection{}
+		err = tempCon.ResolveData(data)
+
+		if err == nil {
+			buf <- data
+
+			fmt.Println("data resolved successfully")
+
+			break
+		}
 	}
 
-	return data, nil
-}
-
-func resolveSimple(conn net.Conn) ([]byte, error) {
-	data, _, err := bufio.NewReader(conn).ReadLine()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	finished <- true
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
