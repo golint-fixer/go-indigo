@@ -46,6 +46,7 @@ func main() {
 			var err error
 
 			if !*noUpNPFlag {
+				common.ThrowWarning("attempting to connect to gateway device")
 				gd, err = networking.GetGateway()
 			}
 

@@ -3,7 +3,7 @@ package networking
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log"
 
 	upnp "github.com/nebulouslabs/go-upnp"
@@ -21,12 +21,12 @@ type Connection struct {
 	InitNodeAddr string `json:"first"`
 	DestNodeAddr string `json:"other"`
 
-	Active bool
+	Active bool `json:"active"`
 
-	Data []byte
+	Data []byte `json:"data"`
 
-	Type   ConnectionType
-	Events []ConnectionEvent
+	Type   ConnectionType    `json:"connectiontype"`
+	Events []ConnectionEvent `json:"events"`
 }
 
 // ConnectionEvent - string inidicating if event occurred between peers or on network
@@ -46,8 +46,31 @@ func (conn *Connection) ResolveData(b []byte) error {
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plConn)
 
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(plConn)
+		return err
+	}
+
+	plConn.AddEvent("accepted")
+
+	*conn = plConn
+
+	return nil
+}
+
+// ResolveDataWithChannel - attempts to restore bytes passed via connection to object specified via connectionType
+func (conn *Connection) ResolveDataWithChannel(channel chan []byte) error {
+	val := make([]byte, 100)
+
+	select {
+	case tVal := <-channel:
+		val = tVal
+	default:
+		return errors.New("nil channel")
+	}
+
+	plConn := Connection{}
+	err := json.NewDecoder(bytes.NewReader(val)).Decode(&plConn)
+
+	if err != nil {
 		return err
 	}
 

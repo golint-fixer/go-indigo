@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	bootStrapNode1Addr = ""
+	bootStrapNode1Addr = "10.144.4.68"
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
@@ -37,7 +37,7 @@ func (db *NodeDatabase) FindNode() string {
 		return db.getBestNode()
 	}
 	common.ThrowWarning("nil db")
-	return ""
+	return "10.144.4.68"
 }
 
 func (db *NodeDatabase) getBestNode() string {
