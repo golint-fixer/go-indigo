@@ -1,17 +1,19 @@
 package networking
 
 import (
+	"bufio"
 	"bytes"
+	"crypto"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -250,7 +252,15 @@ func ListenChain() *types.Chain {
 func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 	Node := Db.FindNode()
 
-	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain"}
+	hash := crypto.SHA256.New()
+
+	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain", Time: time.Now().UTC(), TimeHash: &types.Hash{}, Hash: &types.Hash{}}
+
+	bArray := hash.Sum([]byte(fmt.Sprintf("%v", tempCon)))
+	timeByteArray := hash.Sum([]byte(fmt.Sprintf("%v", tempCon.Time)))
+
+	*tempCon.Hash = types.BytesToHash(bArray)
+	*tempCon.TimeHash = types.BytesToHash(timeByteArray)
 
 	fmt.Println("connection " + tempCon.Type)
 
@@ -495,7 +505,7 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 }
 
 func resolveConnection(conn net.Conn, buf chan []byte) error {
-	err := resolveData(conn, buf)
+	err := resolveOverflow(conn, buf)
 
 	if err != nil {
 		return err
@@ -572,17 +582,37 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 	}
 }
 
-func resolveData(conn net.Conn, buf chan []byte) error {
-	var data bytes.Buffer
-	_, err := io.Copy(&data, conn)
+func resolveOverflow(conn net.Conn, buf chan []byte) error {
+	data, err := ioutil.ReadAll(conn)
 
 	if err != nil {
 		return err
 	}
 
-	buf <- data.Bytes()
+	buf <- data
 
 	return nil
+}
+
+func resolveSimple(buf chan []byte, conn net.Conn, finished chan bool, err error) {
+	err = errors.New("EOF")
+	for err != nil && strings.Contains(err.Error(), "EOF") {
+		fmt.Println("resolving simple data")
+		data, _, _ := bufio.NewReader(conn).ReadLine()
+
+		tempCon := Connection{}
+		err = tempCon.ResolveData(data)
+
+		if err == nil {
+			buf <- data
+
+			fmt.Println("data resolved successfully")
+
+			break
+		}
+	}
+
+	finished <- true
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
@@ -593,7 +623,15 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 	}
 	fmt.Printf("connection init at %s\n", common.GetCurrentTime())
 	if common.StringInSlice(string(connType), ConnectionTypes) {
-		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data}
+		hash := crypto.SHA256.New()
+		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data, Time: time.Now().UTC(), TimeHash: &types.Hash{}, Hash: &types.Hash{}}
+
+		bArray := hash.Sum([]byte(fmt.Sprintf("%v", conn)))
+		timeByteArray := hash.Sum([]byte(fmt.Sprintf("%v", conn.Time)))
+
+		*conn.Hash = types.BytesToHash(bArray)
+		*conn.TimeHash = types.BytesToHash(timeByteArray)
+
 		return &conn
 	}
 	common.ThrowWarning("connection type not valid")

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"time"
 
+	"github.com/mitsukomegumi/indo-go/src/core/types"
 	upnp "github.com/nebulouslabs/go-upnp"
 )
 
@@ -25,8 +27,13 @@ type Connection struct {
 
 	Data []byte `json:"data"`
 
+	Time     time.Time   `json:"inittime"`
+	TimeHash *types.Hash `json:"inithash"`
+
 	Type   ConnectionType    `json:"connectiontype"`
 	Events []ConnectionEvent `json:"events"`
+
+	Hash *types.Hash `json:"connectionhash"`
 }
 
 // ConnectionEvent - string inidicating if event occurred between peers or on network
