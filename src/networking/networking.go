@@ -506,6 +506,8 @@ func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
 
 	<-finishedBool
 
+	// NOTE TO SELF: check isClosed() in goroutine
+
 	if isClosed(buf) {
 		fmt.Println("found error resolving data via simple; trying complex resolution")
 		if err != nil {
