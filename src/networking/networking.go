@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -506,9 +505,9 @@ func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
 
 	<-finishedBool
 
-	// NOTE TO SELF: check isClosed() in goroutine
+	empty := isEmpty(buf)
 
-	if isClosed(buf) {
+	if empty == true {
 		fmt.Println("found error resolving data via simple; trying complex resolution")
 		if err != nil {
 			if strings.Contains(err.Error(), "EOF") {
@@ -538,6 +537,7 @@ func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
 
 func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, connBytes *bytes.Buffer, connec net.Conn) {
 	tempCon := Connection{}
+
 	rErr := tempCon.ResolveData(<-data)
 
 	if rErr != nil {
@@ -602,30 +602,12 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 }
 
 func resolveOverflow(conn net.Conn, buf chan []byte, finished chan bool, err error) {
-	// make a temporary bytes var to read from the connection
-	tmp := make([]byte, 1024)
-	// make 0 length data bytes (since we'll be appending)
-	data := make([]byte, 0)
-	// keep track of full length read
-	length := 0
+	data, err := ioutil.ReadAll(conn)
 
-	// loop through the connection stream, appending tmp to data
-	for {
-		// read to the tmp var
-		n, err := conn.Read(tmp)
-		if err != nil {
-			// log if not normal error
-			if err != io.EOF {
-				finished <- true
-			}
-			break
-		}
+	fmt.Println(string(data))
 
-		// append read data to full data
-		data = append(data, tmp[:n]...)
-
-		// update total read var
-		length += n
+	if err != nil {
+		panic(err)
 	}
 
 	buf <- data
@@ -669,10 +651,10 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 	return nil
 }
 
-func isClosed(channel chan []byte) bool {
+func isEmpty(channel chan []byte) bool {
 	select {
 	case msg := <-channel:
-		fmt.Println(msg)
+		channel <- msg
 		return false
 	default:
 		return true

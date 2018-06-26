@@ -57,12 +57,12 @@ func (conn *Connection) ResolveData(b []byte) error {
 }
 
 // ResolveDataWithChannel - attempts to restore bytes passed via connection to object specified via connectionType
-func (conn *Connection) ResolveDataWithChannel(channel chan []byte) error {
+func (conn *Connection) ResolveDataWithChannel(channel chan *[]byte) error {
 	val := make([]byte, 100)
 
 	select {
 	case tVal := <-channel:
-		val = tVal
+		val = *tVal
 	default:
 		return errors.New("nil channel")
 	}
