@@ -1,19 +1,17 @@
 package networking
 
 import (
-	"bufio"
 	"bytes"
 	"crypto"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -177,7 +175,9 @@ func ListenRelay() *types.Transaction {
 		panic(err)
 	}
 
-	message, err := ioutil.ReadAll(conn)
+	var message bytes.Buffer
+
+	io.Copy(&message, conn)
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
@@ -187,7 +187,7 @@ func ListenRelay() *types.Transaction {
 		panic(err)
 	}
 
-	tempCon.ResolveData(message)
+	tempCon.ResolveData(message.Bytes())
 
 	if tempCon.Type == "relay" {
 		conn.Close()
@@ -220,13 +220,15 @@ func ListenChain() *types.Chain {
 		panic(err)
 	}
 
-	message, err := ioutil.ReadAll(conn)
+	var message bytes.Buffer
+
+	io.Copy(&message, conn)
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
 	}
 
-	tempCon.ResolveData(message)
+	tempCon.ResolveData(message.Bytes())
 
 	if tempCon.Type == "fullchain" {
 		conn.Close()
@@ -294,14 +296,16 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 		<-finished
 	*/
 
-	message, err := ioutil.ReadAll(connec)
+	var message bytes.Buffer
+
+	io.Copy(&message, connec)
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
 		return nil, err
 	}
 
-	decomp, err := common.DecompressBytes(message)
+	decomp, err := common.DecompressBytes(message.Bytes())
 
 	tempCon.ResolveData(decomp)
 
@@ -507,7 +511,7 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 }
 
 func resolveConnection(conn net.Conn, buf chan []byte) error {
-	err := resolveOverflow(conn, buf)
+	err := resolveConnectionData(conn, buf)
 
 	if err != nil {
 		return err
@@ -584,36 +588,23 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 	}
 }
 
-func resolveOverflow(conn net.Conn, buf chan []byte) error {
-	data, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return err
-	}
+func resolveConnectionData(conn net.Conn, buf chan []byte) error {
+	var tmpBuffer bytes.Buffer
+	io.Copy(&tmpBuffer, conn)
 
-	buf <- data
+	buf <- tmpBuffer.Bytes()
 
 	return nil
 }
 
-func resolveSimple(buf chan []byte, conn net.Conn, finished chan bool, err error) {
-	err = errors.New("EOF")
-	for err != nil && strings.Contains(err.Error(), "EOF") {
-		fmt.Println("resolving simple data")
-		data, _, _ := bufio.NewReader(conn).ReadLine()
+func checkResolution(buf []byte) error {
+	tempCon := Connection{}
+	rErr := tempCon.ResolveData(buf)
 
-		tempCon := Connection{}
-		err = tempCon.ResolveData(data)
-
-		if err == nil {
-			buf <- data
-
-			fmt.Println("data resolved successfully")
-
-			break
-		}
+	if rErr != nil {
+		return rErr
 	}
-
-	finished <- true
+	return nil
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
