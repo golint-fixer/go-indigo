@@ -33,6 +33,8 @@ type Connection struct {
 	Type   ConnectionType    `json:"connectiontype"`
 	Events []ConnectionEvent `json:"events"`
 
+	Extra []byte `json:"extradata"`
+
 	Hash *types.Hash `json:"connectionhash"`
 }
 

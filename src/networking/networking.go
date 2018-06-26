@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	timeout = 15 * time.Second
+	timeout = 5 * time.Second
 	rDelay  = 2 * time.Second
 )
 
@@ -256,11 +256,13 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 
 	tempCon := Connection{InitNodeAddr: Db.SelfAddr, DestNodeAddr: Node, Type: "fetchchain", Time: time.Now().UTC(), TimeHash: &types.Hash{}, Hash: &types.Hash{}}
 
-	bArray := hash.Sum([]byte(fmt.Sprintf("%v", tempCon)))
 	timeByteArray := hash.Sum([]byte(fmt.Sprintf("%v", tempCon.Time)))
 
-	*tempCon.Hash = types.BytesToHash(bArray)
 	*tempCon.TimeHash = types.BytesToHash(timeByteArray)
+
+	bArray := hash.Sum([]byte(fmt.Sprintf("%v", tempCon)))
+
+	*tempCon.Hash = types.BytesToHash(bArray)
 
 	fmt.Println("connection " + tempCon.Type)
 
@@ -584,7 +586,6 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 
 func resolveOverflow(conn net.Conn, buf chan []byte) error {
 	data, err := ioutil.ReadAll(conn)
-
 	if err != nil {
 		return err
 	}
@@ -626,11 +627,13 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 		hash := crypto.SHA256.New()
 		conn := Connection{InitNodeAddr: initAddr, DestNodeAddr: destAddr, Type: connType, Data: data, Time: time.Now().UTC(), TimeHash: &types.Hash{}, Hash: &types.Hash{}}
 
-		bArray := hash.Sum([]byte(fmt.Sprintf("%v", conn)))
 		timeByteArray := hash.Sum([]byte(fmt.Sprintf("%v", conn.Time)))
 
-		*conn.Hash = types.BytesToHash(bArray)
 		*conn.TimeHash = types.BytesToHash(timeByteArray)
+
+		bArray := hash.Sum([]byte(fmt.Sprintf("%v", conn)))
+
+		*conn.Hash = types.BytesToHash(bArray)
 
 		return &conn
 	}
