@@ -84,14 +84,13 @@ func ReadChainFromMemory(path string) *Chain {
 }
 
 // DecodeChainFromBytes - decode chain from specified byte array, returning new chain
-func DecodeChainFromBytes(b []byte) *Chain {
+func DecodeChainFromBytes(b []byte) (*Chain, error) {
 	plCh := Chain{}
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plCh)
 
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return nil, err
 	}
 
-	return &plCh
+	return &plCh, nil
 }

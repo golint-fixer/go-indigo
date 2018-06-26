@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"reflect"
 	"strings"
@@ -19,7 +21,7 @@ import (
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 
-	upnp "github.com/NebulousLabs/go-upnp"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 const (
@@ -81,6 +83,23 @@ func GetExtIPAddr() string {
 		log.Fatal(err)
 	}
 	return ip
+}
+
+// GetExtIPAddrNoUpNP - retrieve the external IP address of the current machine w/o upnp
+func GetExtIPAddrNoUpNP() (string, error) {
+	ip := make([]byte, 100)
+	resp, err := http.Get("http://checkip.amazonaws.com/")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	_, err = resp.Body.Read(ip)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(ip[:len(ip)]), nil
 }
 
 // Relay - push localized or received transaction to further node
@@ -212,7 +231,14 @@ func ListenChain() *types.Chain {
 	if tempCon.Type == "fullchain" {
 		conn.Close()
 		ln.Close()
-		return types.DecodeChainFromBytes(tempCon.Data)
+
+		decodedChain, err := types.DecodeChainFromBytes(tempCon.Data)
+
+		if err != nil {
+			panic(err)
+		}
+
+		return decodedChain
 	}
 
 	common.ThrowWarning("transaction relay found; wanted chain")
@@ -248,7 +274,15 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 	}
 
 	connec.Write(connBytes.Bytes())
-	fmt.Printf("\n wrote connection meta: %s", connBytes.String())
+	fmt.Printf("\nwrote connection meta: %s", connBytes.String())
+
+	/*
+		finished := make(chan bool)
+
+		go waitForClose(connec, finished)
+
+		<-finished
+	*/
 
 	message, err := ioutil.ReadAll(connec)
 
@@ -257,16 +291,28 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 		return nil, err
 	}
 
-	tempCon.ResolveData(common.DecompressBytes(message))
+	decomp, err := common.DecompressBytes(message)
+
+	tempCon.ResolveData(decomp)
 
 	if tempCon.Type == "statichostfullchain" {
 		connec.Close()
 
-		rCh := types.DecodeChainFromBytes(tempCon.Data)
+		rCh, err := types.DecodeChainFromBytes(tempCon.Data)
+
+		if err != nil {
+			panic(err)
+		}
 
 		*Db = *rCh.NodeDb
 
-		return types.DecodeChainFromBytes(tempCon.Data), nil
+		decodedChain, err := types.DecodeChainFromBytes(tempCon.Data)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return decodedChain, nil
 	}
 
 	common.ThrowWarning("chain not found")
@@ -325,15 +371,20 @@ func (conn *Connection) attempt() error {
 		return err
 	}
 
-	connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
-	connec.Write(connBytes.Bytes())             // Write connection meta
+	//connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
+	connec.Write(connBytes.Bytes()) // Write connection meta
 
-	fmt.Println(connBytes.Bytes())
+	finished := make(chan bool)
 
-	conn.AddEvent("started")
+	fmt.Println("started")
+
+	go waitForClose(connec, finished)
+
+	<-finished
+
+	fmt.Println("finished")
 
 	connec.Close()
-
 	return nil
 }
 
@@ -353,11 +404,15 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 	finished := make(chan bool)
 
-	go handleRequest(connec, conn, Ch, finished)
+	data := make(chan []byte, 1000000)
+
+	go handleRequest(connec, data, conn, Ch, finished)
 
 	<-finished
 
-	//connec.Close()
+	fmt.Println("finished resolving connection; terminating")
+
+	connec.Close()
 	ln.Close()
 }
 
@@ -365,27 +420,138 @@ func (conn *Connection) timeout() {
 	conn.AddEvent("timed out")
 }
 
-func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished chan bool) {
+func waitForClose(conn net.Conn, finished chan bool) {
+	ch := make(chan []byte)
+	eCh := make(chan error)
+
+	// Start a goroutine to read from our net connection
+	go func(ch chan []byte, eCh chan error) {
+		for {
+			// try to read the data
+			data := make([]byte, 512)
+			_, err := conn.Read(data)
+			if err != nil {
+				// send an error if it's encountered
+				eCh <- err
+				return
+			}
+			// send data if we read some.
+			ch <- data
+		}
+	}(ch, eCh)
+
+	ticker := time.Tick(time.Second)
+	// continuously read from the connection
+	for {
+		select {
+		// This case means we recieved data on the connection
+		case data := <-ch:
+			fmt.Println("Found data: ")
+
+			decomp, err := common.DecompressBytes(data)
+
+			if decomp != nil {
+				fmt.Println(string(decomp[:]))
+
+				decodedChain, err := types.DecodeChainFromBytes(decomp)
+
+				fmt.Println(err)
+
+				if decodedChain != nil {
+					finished <- true
+				}
+			} else {
+				fmt.Println(err)
+			}
+		// This case means we got an error and the goroutine has finished
+		case err := <-eCh:
+			fmt.Println(err)
+			break
+		// This will timeout on the read.
+		case <-ticker:
+			common.ThrowWarning("timeout")
+			finished <- true
+		}
+	}
+}
+
+func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *types.Chain, finished chan bool) {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
-	buf := new([]byte)
+	finishedBool := make(chan bool)
+	finishedAgainBool := make(chan bool)
 
-	*buf = resolveConnection(connec)
+	fmt.Println("resolving connection")
 
+	go resolveConnection(connec, data, finishedBool)
+
+	<-finishedBool
+
+	go finalizeResolvedConnection(data, finishedAgainBool, Ch, connBytes, connec) // call from resolveconnection routine
+
+	<-finishedAgainBool
+
+	finished <- true
+}
+
+func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
+	finishedBool := make(chan bool)
+	finishedSecondary := make(chan bool)
+
+	var err error
+
+	go resolveSimple(buf, conn, finishedBool, err)
+
+	<-finishedBool
+
+	if isClosed(buf) {
+		fmt.Println("found error resolving data via simple; trying complex resolution")
+		if err != nil {
+			if strings.Contains(err.Error(), "EOF") {
+				go resolveOverflow(conn, buf, finishedSecondary, err)
+
+				if err != nil {
+					panic(err)
+				}
+
+				<-finishedSecondary
+				finished <- true
+			}
+		} else {
+			go resolveOverflow(conn, buf, finishedSecondary, err)
+
+			if err != nil {
+				panic(err)
+			}
+
+			<-finishedSecondary
+			finished <- true
+		}
+	}
+
+	finished <- true
+}
+
+func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, connBytes *bytes.Buffer, connec net.Conn) {
 	tempCon := Connection{}
-	rErr := tempCon.ResolveData(*buf)
-
-	fmt.Println(buf)
+	rErr := tempCon.ResolveData(<-data)
 
 	if rErr != nil {
-		common.ThrowWarning(rErr.Error())
+		common.ThrowWarning("error while resolving connection data: " + rErr.Error())
+
+		finished <- true
 	} else {
 		fmt.Println("\nConnection type: " + tempCon.Type)
 
 		if tempCon.Type == "fullchain" {
-			chain := types.DecodeChainFromBytes(tempCon.Data)
+			chain, err := types.DecodeChainFromBytes(tempCon.Data)
+
+			if err != nil {
+				panic(err)
+			}
+
 			*Ch = *chain
 
 			common.ThrowSuccess("found chain: ")
@@ -400,6 +566,8 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 			Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
+
+			finished <- true
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
 			Ch.AddTransaction(tx)
@@ -413,6 +581,8 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 			os.Stdout.Write(b)
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
+
+			finished <- true
 		} else if tempCon.Type == "fetchchain" {
 			fmt.Println("writing to connection")
 
@@ -423,46 +593,63 @@ func handleRequest(connec net.Conn, conn *Connection, Ch *types.Chain, finished 
 			if wErr != nil {
 				common.ThrowWarning(wErr.Error())
 			}
+
+			finished <- true
 		}
 	}
 }
 
-func resolveConnection(conn net.Conn) []byte {
-	testResolution, err := resolveSimple(conn)
+func resolveOverflow(conn net.Conn, buf chan []byte, finished chan bool, err error) {
+	// make a temporary bytes var to read from the connection
+	tmp := make([]byte, 1024)
+	// make 0 length data bytes (since we'll be appending)
+	data := make([]byte, 0)
+	// keep track of full length read
+	length := 0
 
-	if err != nil {
-		if strings.Contains(err.Error(), "EOF") {
-			overflowResolution, err := resolveOverflow(conn)
-
-			if err != nil {
-				panic(err)
+	// loop through the connection stream, appending tmp to data
+	for {
+		// read to the tmp var
+		n, err := conn.Read(tmp)
+		if err != nil {
+			// log if not normal error
+			if err != io.EOF {
+				finished <- true
 			}
-			return overflowResolution
+			break
 		}
-		panic(err)
+
+		// append read data to full data
+		data = append(data, tmp[:n]...)
+
+		// update total read var
+		length += n
 	}
 
-	return testResolution
+	buf <- data
+
+	finished <- true
 }
 
-func resolveOverflow(conn net.Conn) ([]byte, error) {
-	data, err := ioutil.ReadAll(conn)
+func resolveSimple(buf chan []byte, conn net.Conn, finished chan bool, err error) {
+	err = errors.New("EOF")
+	for err != nil && strings.Contains(err.Error(), "EOF") {
+		fmt.Println("resolving simple data")
+		data, _, _ := bufio.NewReader(conn).ReadLine()
 
-	if err != nil {
-		panic(err)
+		tempCon := Connection{}
+		err = tempCon.ResolveData(data)
+
+		if err == nil {
+			buf <- data
+
+			fmt.Println("data resolved successfully")
+
+			break
+		}
 	}
 
-	return data, nil
-}
-
-func resolveSimple(conn net.Conn) ([]byte, error) {
-	data, _, err := bufio.NewReader(conn).ReadLine()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	finished <- true
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
@@ -478,4 +665,14 @@ func newConnection(initAddr string, destAddr string, connType ConnectionType, da
 	}
 	common.ThrowWarning("connection type not valid")
 	return nil
+}
+
+func isClosed(channel chan []byte) bool {
+	select {
+	case msg := <-channel:
+		fmt.Println(msg)
+		return false
+	default:
+		return true
+	}
 }

@@ -68,19 +68,19 @@ func CompressBytes(b []byte) []byte {
 }
 
 // DecompressBytes - decompress given bytes via gzip
-func DecompressBytes(b []byte) []byte {
+func DecompressBytes(b []byte) ([]byte, error) {
 	var bBuff bytes.Buffer
 	bBuff.Write(b)
 	r, err := gzip.NewReader(&bBuff)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	r.Close()
 
 	s, err := ioutil.ReadAll(r)
-	return s
+	return s, nil
 }
 
 // GetCurrentDir - returns current execution directory
