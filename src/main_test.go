@@ -33,12 +33,12 @@ func TestRelayTx(t *testing.T) {
 
 	//Creating new account:
 
-	accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
+	accountAddress := common.HexToAddress("4920616d204d697473756b6f204d6567756d69")
 	account := types.NewAccount(accountAddress)
 
 	//Creating witness data:
 
-	signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
+	signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
 	witness := types.NewWitness(1000, signature, 100)
 
 	//Creating transaction, contract, chain
@@ -63,7 +63,7 @@ func TestRelayTx(t *testing.T) {
 		t.Errorf("Chain serialization failed: %s", sErr.Error())
 	}
 
-	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 	//Adding witness, transaction to chain
 
