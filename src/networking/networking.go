@@ -1,18 +1,17 @@
 package networking
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -479,14 +478,14 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
 
-	finishedBool := make(chan bool)
 	finishedAgainBool := make(chan bool)
 
 	fmt.Println("resolving connection")
 
-	go resolveConnection(connec, data, finishedBool)
-
-	<-finishedBool
+	err := resolveConnection(connec, data)
+	if err != nil {
+		panic(err)
+	}
 
 	go finalizeResolvedConnection(data, finishedAgainBool, Ch, connBytes, connec) // call from resolveconnection routine
 
@@ -495,44 +494,14 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 	finished <- true
 }
 
-func resolveConnection(conn net.Conn, buf chan []byte, finished chan bool) {
-	finishedBool := make(chan bool)
-	finishedSecondary := make(chan bool)
+func resolveConnection(conn net.Conn, buf chan []byte) error {
+	err := resolveData(conn, buf)
 
-	var err error
-
-	go resolveSimple(buf, conn, finishedBool, err)
-
-	<-finishedBool
-
-	empty := isEmpty(buf)
-
-	if empty == true {
-		fmt.Println("found error resolving data via simple; trying complex resolution")
-		if err != nil {
-			if strings.Contains(err.Error(), "EOF") {
-				go resolveOverflow(conn, buf, finishedSecondary, err)
-
-				if err != nil {
-					panic(err)
-				}
-
-				<-finishedSecondary
-				finished <- true
-			}
-		} else {
-			go resolveOverflow(conn, buf, finishedSecondary, err)
-
-			if err != nil {
-				panic(err)
-			}
-
-			<-finishedSecondary
-			finished <- true
-		}
+	if err != nil {
+		return err
 	}
 
-	finished <- true
+	return nil
 }
 
 func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, connBytes *bytes.Buffer, connec net.Conn) {
@@ -564,7 +533,9 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 			}
 			os.Stdout.Write(b)
 
-			common.ThrowSuccess("found node: " + Ch.NodeDb.NodeAddress[len(Ch.NodeDb.NodeAddress)-1])
+			if !reflect.ValueOf(Ch.NodeDb.NodeAddress).IsNil() {
+				common.ThrowSuccess("found node: " + Ch.NodeDb.NodeAddress[len(Ch.NodeDb.NodeAddress)-1])
+			}
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
 			Ch.NodeDb.WriteDbToMemory(common.GetCurrentDir())
@@ -601,39 +572,17 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 	}
 }
 
-func resolveOverflow(conn net.Conn, buf chan []byte, finished chan bool, err error) {
-	data, err := ioutil.ReadAll(conn)
-
-	fmt.Println(string(data))
+func resolveData(conn net.Conn, buf chan []byte) error {
+	var data bytes.Buffer
+	_, err := io.Copy(&data, conn)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	buf <- data
+	buf <- data.Bytes()
 
-	finished <- true
-}
-
-func resolveSimple(buf chan []byte, conn net.Conn, finished chan bool, err error) {
-	err = errors.New("EOF")
-	for err != nil && strings.Contains(err.Error(), "EOF") {
-		fmt.Println("resolving simple data")
-		data, _, _ := bufio.NewReader(conn).ReadLine()
-
-		tempCon := Connection{}
-		err = tempCon.ResolveData(data)
-
-		if err == nil {
-			buf <- data
-
-			fmt.Println("data resolved successfully")
-
-			break
-		}
-	}
-
-	finished <- true
+	return nil
 }
 
 func newConnection(initAddr string, destAddr string, connType ConnectionType, data []byte) *Connection {
