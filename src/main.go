@@ -14,6 +14,7 @@ import (
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 var relayFlag = flag.Bool("relay", false, "relay tx to node")
@@ -22,21 +23,40 @@ var hostFlag = flag.Bool("host", false, "host current copy of chain")
 var fetchFlag = flag.Bool("fetch", false, "fetch current copy of chain")
 var newChainFlag = flag.Bool("new", false, "create new chain")
 var loopFlag = flag.Bool("forever", false, "perform indefinitely")
+var fullChainFlag = flag.Bool("relaychain", false, "relay entire chain")
+var registerNode = flag.Bool("regnode", false, "registers node")
+var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
-		- test node db serialization
+		[DONE] - test node db serialization
 		[DONE] - add version to chain struct (increments on each transaction)
+		[DONE] - add unit testing
 */
 
 func main() {
 	flag.Parse()
 
-	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag {
+	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
 		if *listenFlag || *hostFlag {
-			gd, err := networking.GetGateway()
+			common.ThrowWarning("starting host")
+
+			var gd *upnp.IGD
+
+			var err error
+
+			if !*noUpNPFlag {
+				common.ThrowWarning("attempting to connect to gateway device")
+				gd, err = networking.GetGateway()
+			}
+
 			tsfRef := discovery.NodeID{}
-			eDb := discovery.NewNodeDatabase(tsfRef, "")
+			eDb, err := discovery.NewNodeDatabase(tsfRef, "")
+
+			if err != nil {
+				panic(err)
+			}
+
 			rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
 
 			if err != nil {
@@ -46,43 +66,69 @@ func main() {
 			if rErr != nil && strings.Contains(rErr.Error(), "cannot find") {
 				common.ThrowWarning(rErr.Error())
 
-				ip, err := gd.ExternalIP()
-				if err != nil {
-					panic(err)
+				var ip string
+
+				var err error
+
+				if gd != nil {
+					ip, err = gd.ExternalIP()
+					if err != nil {
+						panic(err)
+					}
+				} else {
+					ip, err = networking.GetExtIPAddrNoUpNP()
 				}
 
 				selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-				db := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+				db, err := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+
+				if err != nil {
+					panic(err)
+				}
+
 				db.WriteDbToMemory(common.GetCurrentDir())
 			}
-			networking.PrepareForConnection(gd, eDb)
+			if !*noUpNPFlag {
+				fmt.Println("configuring upnp devices")
+				networking.PrepareForConnection(gd, eDb)
+			}
 		} else {
 			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
 
-			db := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+			db, err := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+
+			if err != nil {
+				panic(err)
+			}
+
 			db.WriteDbToMemory(common.GetCurrentDir())
 		}
 
-		db := discovery.ReadDbFromMemory(common.GetCurrentDir())
+		db, err := discovery.ReadDbFromMemory(common.GetCurrentDir())
+
+		if err != nil {
+			panic(err)
+		}
+
 		fmt.Println("\nbest node: " + db.FindNode())
 
-		if *relayFlag || *hostFlag {
+		if *relayFlag || *hostFlag || *fullChainFlag {
 			//Creating new account:
 
-			accountAddress := common.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16")
+			accountAddress := common.HexToAddress("4920616d204d697473756b6f204d6567756d69")
 			account := types.NewAccount(accountAddress)
 
 			//Creating witness data:
 
-			signature := types.HexToSignature("281055afc982d96fab65b3a49cac8b878184cb16")
+			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
 			witness := types.NewWitness(1000, signature, 100)
 
 			//Creating transaction, contract, chain
 
 			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-			test := types.NewTransaction(uint64(1), *account, types.HexToAddress("281055afc982d96fab65b3a49cac8b878184cb16"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+			test := types.NewTransaction(uint64(1), *account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 			//Adding witness, transaction to chain
 
@@ -98,6 +144,9 @@ func main() {
 			if *relayFlag {
 				fmt.Println("attempting to relay")
 				networking.Relay(test, db)
+			} else if *fullChainFlag {
+				fmt.Println("attempting to relay")
+				networking.RelayChain(testDesChain, db)
 			} else if *hostFlag {
 				fmt.Println("attempting to host")
 				networking.HostChain(testDesChain, db, *loopFlag)
@@ -134,17 +183,49 @@ func main() {
 
 		tsfRef := discovery.NodeID{}
 
-		eDb := discovery.NewNodeDatabase(tsfRef, "")
-		rErr := common.ReadGob(common.GetCurrentDir()+"nodeDb.gob", &eDb)
+		eDb, err := discovery.NewNodeDatabase(tsfRef, "")
 
-		if rErr != nil {
-			panic(rErr)
+		if err != nil {
+			panic(err)
 		}
 
+		eDb.WriteDbToMemory(common.GetCurrentDir())
+
 		testcontract := new(contracts.Contract)
-		testchain := types.Chain{ParentContract: testcontract, Version: 0}
+		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
 
 		testchain.WriteChainToMemory(common.GetCurrentDir())
+	} else if *registerNode {
+		common.ThrowWarning("registering node")
+
+		gd, err := networking.GetGateway()
+
+		if err != nil {
+			panic(err)
+		}
+
+		ip, err := gd.ExternalIP()
+
+		if err != nil {
+			panic(err)
+		}
+
+		db, err := discovery.ReadDbFromMemory(common.GetCurrentDir())
+
+		if err != nil {
+			panic(err)
+		}
+
+		ch, err := networking.FetchChain(db)
+
+		if err != nil {
+			panic(err)
+		}
+
+		db.AddNode(ip, discovery.NodeID{})
+		*ch.NodeDb = *db
+
+		networking.RelayChain(ch, db)
 	} else {
 		common.ThrowWarning("warning: no arguments found")
 		fmt.Println("available flags: ")
@@ -166,9 +247,15 @@ func main() {
 			*newChainFlag = true
 		} else if strings.Contains(text, "forever") {
 			*loopFlag = true
+		} else if strings.Contains(text, "relaychain") {
+			*fullChainFlag = true
+		} else if strings.Contains(text, "regnode") {
+			*registerNode = true
+		} else if strings.Contains(text, "noupnp") {
+			*noUpNPFlag = true
 		}
 
-		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag {
+		if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *newChainFlag || *loopFlag || *fullChainFlag || *noUpNPFlag || *registerNode {
 			main()
 		}
 	}

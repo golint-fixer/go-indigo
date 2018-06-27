@@ -60,8 +60,14 @@ func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 }
 
 // WriteChainToMemory - create serialized instance of specified chain in specified path (string)
-func (RefChain Chain) WriteChainToMemory(path string) {
+func (RefChain Chain) WriteChainToMemory(path string) error {
 	common.WriteGob(path+string(RefChain.Identifier)+"Chain.gob", RefChain)
+	err := RefChain.NodeDb.WriteDbToMemory(common.GetCurrentDir())
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // ReadChainFromMemory - read serialized object of specified chain from specified path
@@ -78,14 +84,13 @@ func ReadChainFromMemory(path string) *Chain {
 }
 
 // DecodeChainFromBytes - decode chain from specified byte array, returning new chain
-func DecodeChainFromBytes(b []byte) *Chain {
+func DecodeChainFromBytes(b []byte) (*Chain, error) {
 	plCh := Chain{}
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plCh)
 
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		return nil, err
 	}
 
-	return &plCh
+	return &plCh, nil
 }

@@ -3,6 +3,7 @@ package discovery
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 
@@ -11,8 +12,7 @@ import (
 )
 
 const (
-	bootStrapNode1Addr = "108.6.212.149"
-	bootStrapNode2Addr = "166.109.110.20"
+	bootStrapNode1Addr = "10.144.4.68"
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
@@ -30,10 +30,14 @@ type NodeID [64]byte
 
 // FindNode - find best node to connect to, returns ip address as string
 func (db *NodeDatabase) FindNode() string {
-	if len(db.NodeAddress) == 0 {
-		ReadDbFromMemory(common.GetCurrentDir())
+	if !reflect.ValueOf(db).IsNil() {
+		if len(db.NodeAddress) == 0 {
+			ReadDbFromMemory(common.GetCurrentDir())
+		}
+		return db.getBestNode()
 	}
-	return db.getBestNode()
+	common.ThrowWarning("nil db")
+	return "10.144.4.68"
 }
 
 func (db *NodeDatabase) getBestNode() string {
@@ -61,19 +65,26 @@ func (db *NodeDatabase) getBootstrap() string {
 		}
 		x++
 	}
-	return "108.6.212.149"
+	return ""
 }
 
 // NewNodeDatabase - return new node database initialized with self ID
-func NewNodeDatabase(selfRef NodeID, selfAddr string) *NodeDatabase {
-	readDb := ReadDbFromMemory(common.GetCurrentDir())
+func NewNodeDatabase(selfRef NodeID, selfAddr string) (*NodeDatabase, error) {
+	readDb, err := ReadDbFromMemory(common.GetCurrentDir())
+
+	if err != nil {
+		if !strings.Contains(err.Error(), "no such file") && !strings.Contains(err.Error(), "cannot find the file") {
+			return nil, err
+		}
+	}
+
 	if readDb != nil {
 		fmt.Println("read existing node database from mem")
-		return readDb
+		return readDb, nil
 	}
 	var tempArr []string
 	tempArr = append(tempArr, bootStrapNode1Addr)
-	return &NodeDatabase{SelfRef: selfRef, SelfAddr: selfAddr, BootstrapNodeAddrs: tempArr}
+	return &NodeDatabase{SelfRef: selfRef, SelfAddr: selfAddr, BootstrapNodeAddrs: tempArr}, nil
 }
 
 // AddNode - add specified IP address & ID to node directory
@@ -91,27 +102,28 @@ func (db *NodeDatabase) AddNode(ip string, id NodeID) {
 }
 
 // WriteDbToMemory - create serialized instance of specified NodeDatabase in specified path (string)
-func (db *NodeDatabase) WriteDbToMemory(path string) {
+func (db *NodeDatabase) WriteDbToMemory(path string) error {
 	err := common.WriteGob(path+"nodeDb.gob", db)
 
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		common.ThrowSuccess("\nobject written to memory")
+		return err
 	}
+
+	common.ThrowSuccess("\nobject written to memory")
+
+	return nil
 }
 
 // ReadDbFromMemory - read serialized object of specified node database from specified path
-func ReadDbFromMemory(path string) *NodeDatabase {
+func ReadDbFromMemory(path string) (*NodeDatabase, error) {
 	tempDb := new(NodeDatabase)
 
-	error := common.ReadGob(path+"nodeDb.gob", tempDb)
-	if error != nil {
-		fmt.Println(error)
-	} else {
-		return tempDb
+	err := common.ReadGob(path+"nodeDb.gob", tempDb)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return tempDb, nil
 }
 
 // TestIP - ping specified IP address to test for validity

@@ -3,10 +3,12 @@ package networking
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"log"
+	"time"
 
-	upnp "github.com/NebulousLabs/go-upnp"
+	"github.com/mitsukomegumi/indo-go/src/core/types"
+	upnp "github.com/nebulouslabs/go-upnp"
 )
 
 // ConnectionTypes - string array representing types of connections that can be
@@ -21,12 +23,19 @@ type Connection struct {
 	InitNodeAddr string `json:"first"`
 	DestNodeAddr string `json:"other"`
 
-	Active bool
+	Active bool `json:"active"`
 
-	Data []byte
+	Data []byte `json:"data"`
 
-	Type   ConnectionType
-	Events []ConnectionEvent
+	Time     time.Time   `json:"inittime"`
+	TimeHash *types.Hash `json:"inithash"`
+
+	Type   ConnectionType    `json:"connectiontype"`
+	Events []ConnectionEvent `json:"events"`
+
+	Extra []byte `json:"extradata"`
+
+	Hash *types.Hash `json:"connectionhash"`
 }
 
 // ConnectionEvent - string inidicating if event occurred between peers or on network
@@ -41,18 +50,44 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 }
 
 // ResolveData - attempts to restore bytes passed via connection to object specified via connectionType
-func (conn *Connection) ResolveData(b []byte) {
+func (conn *Connection) ResolveData(b []byte) error {
 	plConn := Connection{}
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plConn)
 
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(plConn)
+		return err
 	}
 
 	plConn.AddEvent("accepted")
 
 	*conn = plConn
+
+	return nil
+}
+
+// ResolveDataWithChannel - attempts to restore bytes passed via connection to object specified via connectionType
+func (conn *Connection) ResolveDataWithChannel(channel chan *[]byte) error {
+	val := make([]byte, 100)
+
+	select {
+	case tVal := <-channel:
+		val = *tVal
+	default:
+		return errors.New("nil channel")
+	}
+
+	plConn := Connection{}
+	err := json.NewDecoder(bytes.NewReader(val)).Decode(&plConn)
+
+	if err != nil {
+		return err
+	}
+
+	plConn.AddEvent("accepted")
+
+	*conn = plConn
+
+	return nil
 }
 
 // GetGateway - get reference to current network gateway device
