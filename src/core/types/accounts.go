@@ -13,7 +13,7 @@ type Account struct {
 
 // GetBalance - returns balance of specified account.
 func GetBalance(account Account) *int {
-	test := 100
+	test := 0
 	return &test
 }
 
