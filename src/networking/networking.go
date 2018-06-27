@@ -1,6 +1,7 @@
 package networking
 
 import (
+	"bufio"
 	"bytes"
 	"crypto"
 	"encoding/json"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
@@ -589,10 +591,32 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 }
 
 func resolveConnectionData(conn net.Conn, buf chan []byte) error {
-	var tmpBuffer bytes.Buffer
-	io.Copy(&tmpBuffer, conn)
+	firstLine, _, err := bufio.NewReader(conn).ReadLine()
 
-	buf <- tmpBuffer.Bytes()
+	if err != nil {
+		return err
+	}
+
+	err = checkResolution(firstLine)
+
+	if err != nil {
+		fmt.Println(err)
+		if !strings.Contains(err.Error(), "invalid") && !strings.Contains(err.Error(), "EOF") {
+			return err
+		}
+		var tmpBuffer bytes.Buffer
+		io.Copy(&tmpBuffer, conn)
+
+		concatBuf := append(firstLine, tmpBuffer.Bytes()...)
+
+		fmt.Println(string(concatBuf))
+
+		buf <- concatBuf
+
+		return nil
+	}
+
+	buf <- firstLine
 
 	return nil
 }
