@@ -3,13 +3,18 @@ package common
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/gob"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"time"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 // StringInSlice - checks if specified string is in array
 func StringInSlice(a string, list []string) bool {
@@ -95,4 +100,19 @@ func GetCurrentDir() string {
 // GetCurrentTime - Fetch current UTC time
 func GetCurrentTime() time.Time {
 	return time.Now().UTC()
+}
+
+// RandStringRunes - generates random string with size
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+// SHA256 - hash specified byte array
+func SHA256(b []byte) string {
+	hash := sha256.Sum256(b)
+	return base64.StdEncoding.EncodeToString(hash[:])
 }

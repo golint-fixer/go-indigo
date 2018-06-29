@@ -460,7 +460,7 @@ func waitForClose(conn net.Conn, finished chan bool) {
 	// continuously read from the connection
 	for {
 		select {
-		// This case means we recieved data on the connection
+		// This case means we received data on the connection
 		case data := <-ch:
 			fmt.Println("Found data: ")
 
