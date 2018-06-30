@@ -16,12 +16,26 @@ type Wallet struct {
 	LastVersion   int `json:"version"` // Last scanned block with version number
 
 	Transactions []*Transaction `json:"transactions"`
+
+	Account *Account `json:"account"`
 }
 
 // NewWallet - create new wallet instance
 func NewWallet(Ch *Chain) *Wallet {
 	tempWallet := new(Wallet)
+
+	seed := tempWallet.generateSeed()
+	tempWallet.PrivateKeySeeds = seed
+
+	private := tempWallet.generatePrivateKey()
+	tempWallet.PrivateKey = private
+
+	public := tempWallet.generatePublicKey()
+	tempWallet.PublicKey = BytesToAddress([]byte(public))
+
 	wallet := Wallet{PrivateKeySeeds: tempWallet.generateSeed(), PrivateKey: tempWallet.generatePrivateKey(), PublicKey: BytesToAddress([]byte(tempWallet.generatePublicKey())), Balance: 0, OriginVersion: Ch.Version, LastVersion: Ch.Version}
+
+	wallet.Account = NewAccount(wallet.PublicKey)
 
 	return &wallet
 }
@@ -30,6 +44,10 @@ func NewWallet(Ch *Chain) *Wallet {
 func (wallet Wallet) ScanChain(Ch *Chain) {
 	wallet.findSent(Ch)
 	wallet.findReceived(Ch)
+
+	acc := *wallet.Account
+
+	acc.Balance = wallet.Balance
 }
 
 func (wallet Wallet) findSent(Ch *Chain) []*Transaction {

@@ -9,9 +9,8 @@ type Account struct {
 }
 
 // GetBalance - returns balance of specified account.
-func GetBalance(account Account) *int {
-	test := 100
-	return &test
+func GetBalance(account Account) int {
+	return account.Balance
 }
 
 // NewAccount - return new account

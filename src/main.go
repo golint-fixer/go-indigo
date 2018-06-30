@@ -37,6 +37,8 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 func main() {
 	flag.Parse()
 
+	var wallet types.Wallet
+
 	if *relayFlag || *listenFlag || *hostFlag || *fetchFlag || *loopFlag || *fullChainFlag || *noUpNPFlag {
 		if *listenFlag || *hostFlag {
 			common.ThrowWarning("starting host")
@@ -114,10 +116,11 @@ func main() {
 		fmt.Println("\nbest node: " + db.FindNode())
 
 		if *relayFlag || *hostFlag || *fullChainFlag {
-			//Creating new account:
+			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-			accountAddress := common.HexToAddress("4920616d204d697473756b6f204d6567756d69")
-			account := types.NewAccount(accountAddress)
+			//Creating new wallet:
+
+			wallet = *types.NewWallet(testchain)
 
 			//Creating witness data:
 
@@ -126,9 +129,7 @@ func main() {
 
 			//Creating transaction, contract, chain
 
-			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
-
-			test := types.NewTransaction(uint64(1), *account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 			//Adding witness, transaction to chain
 
@@ -260,3 +261,9 @@ func main() {
 		}
 	}
 }
+
+/*
+	TODO
+	- node registration
+	- wallets
+*/

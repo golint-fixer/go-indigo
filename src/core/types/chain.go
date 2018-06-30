@@ -20,6 +20,11 @@ type Chain struct {
 
 	Transactions []*Transaction `json:"transactions"`
 
+	MaxCirculating int `json:"maxcirculating"`
+	Circulating    int `json:"circulating"`
+
+	Base int `json:"base"`
+
 	Version int `json:"version"`
 }
 

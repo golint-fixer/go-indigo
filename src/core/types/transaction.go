@@ -7,7 +7,6 @@ import (
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	contracts "github.com/mitsukomegumi/indo-go/src/contracts"
@@ -26,11 +25,9 @@ type Transaction struct {
 
 	SendingAccount Account `json:"sending account"`
 
-	ChainVersion int `json:"chainver"`
+	Reward int `json:"reward"`
 
-	hash atomic.Value
-	size atomic.Value
-	from atomic.Value
+	ChainVersion int `json:"chainver"`
 }
 
 type transactiondata struct {
@@ -48,16 +45,16 @@ type transactiondata struct {
 }
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
-func NewTransaction(nonce uint64, SendingAccount Account, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
-	return newTransaction(nonce, SendingAccount, &to, amount, data, contract, extra)
+func NewTransaction(ch *Chain, nonce uint64, SendingAccount Account, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+	return newTransaction(ch, nonce, SendingAccount, &to, amount, data, contract, extra)
 }
 
 //NewContractCreation - Create new instance of transaction struct specifying contract creation arguments.
-func NewContractCreation(nonce uint64, IssuingAccount Account, amount *int, data []byte, extra []byte) *Transaction {
-	return newTransaction(nonce, IssuingAccount, nil, amount, data, nil, extra)
+func NewContractCreation(ch *Chain, nonce uint64, IssuingAccount Account, amount *int, data []byte, extra []byte) *Transaction {
+	return newTransaction(ch, nonce, IssuingAccount, nil, amount, data, nil, extra)
 }
 
-func newTransaction(nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	hash := crypto.SHA256.New()
 	txdata := transactiondata{
 		Nonce:       nonce,
@@ -78,7 +75,13 @@ func newTransaction(nonce uint64, from Account, to *Address, amount *int, data [
 		txdata.Amount = amount
 	}
 
-	return &Transaction{Data: txdata, Contract: contract, Weight: int(0), Verifications: int(0), SendingAccount: from}
+	tx := Transaction{Data: txdata, Contract: contract, Weight: int(0), Verifications: int(0), SendingAccount: from, Reward: 0}
+
+	tx.Reward = tx.calculateReward(Ch)
+
+	(*Ch).Circulating += tx.Reward
+
+	return &tx
 }
 
 // DecodeTxFromBytes - decode transaction from specified byte array, returning transaction
@@ -92,4 +95,19 @@ func DecodeTxFromBytes(b []byte) *Transaction {
 	}
 
 	return &plTx
+}
+
+func (tx Transaction) calculateReward(Ch *Chain) int {
+	max := Ch.MaxCirculating
+	curr := Ch.Circulating
+	base := Ch.Base
+	lastreward := Ch.Transactions[len(Ch.Transactions)-1].Reward
+
+	if lastreward != 0 && max != 0 {
+		if curr+lastreward/2 > max {
+			return 0
+		}
+		return lastreward / 2
+	}
+	return base
 }
