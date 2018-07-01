@@ -116,3 +116,13 @@ func SHA256(b []byte) string {
 	hash := sha256.Sum256(b)
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
+
+// CheckKeys - check that specified private key combinations match public key
+func CheckKeys(priv string, seeds []string, pub string) bool {
+	combined := seeds[0] + seeds[1]
+
+	if SHA256([]byte(priv+combined)) == pub {
+		return true
+	}
+	return false
+}

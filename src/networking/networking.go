@@ -140,7 +140,7 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) error {
 }
 
 // HostChain - host localized chain to forwarded port
-func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
+func HostChain(Ch *types.Chain, wit *types.Witness, Db *discovery.NodeDatabase, Loop bool) {
 	if reflect.ValueOf(Ch.NodeDb).IsNil() {
 		*Ch = types.Chain{ParentContract: Ch.ParentContract, Identifier: Ch.Identifier, NodeDb: Db, Transactions: Ch.Transactions, Version: Ch.Version}
 	}
@@ -149,12 +149,12 @@ func HostChain(Ch *types.Chain, Db *discovery.NodeDatabase, Loop bool) {
 		for {
 			chBytes := new(bytes.Buffer)
 			json.NewEncoder(chBytes).Encode(Ch)
-			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch)
+			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch, wit)
 		}
 	} else {
 		chBytes := new(bytes.Buffer)
 		json.NewEncoder(chBytes).Encode(Ch)
-		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch)
+		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch, wit)
 	}
 }
 
@@ -404,7 +404,7 @@ func (conn *Connection) attempt() error {
 	return nil
 }
 
-func (conn *Connection) start(Ch *types.Chain) {
+func (conn *Connection) start(Ch *types.Chain, wit *types.Witness) {
 	ln, err := net.Listen("tcp", ":3000")
 	if err != nil {
 		fmt.Println(err) // Print panic meta
@@ -422,7 +422,7 @@ func (conn *Connection) start(Ch *types.Chain) {
 
 	data := make(chan []byte, 1000000)
 
-	go handleRequest(connec, data, conn, Ch, finished)
+	go handleRequest(connec, data, conn, Ch, wit, finished)
 
 	<-finished
 
@@ -491,7 +491,7 @@ func waitForClose(conn net.Conn, finished chan bool) {
 	}
 }
 
-func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *types.Chain, finished chan bool) {
+func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *types.Chain, wit *types.Witness, finished chan bool) {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -505,7 +505,7 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 		panic(err)
 	}
 
-	go finalizeResolvedConnection(data, finishedAgainBool, Ch, connBytes, connec) // call from resolveconnection routine
+	go finalizeResolvedConnection(data, finishedAgainBool, Ch, wit, connBytes, connec) // call from resolveconnection routine
 
 	<-finishedAgainBool
 
@@ -522,7 +522,7 @@ func resolveConnection(conn net.Conn, buf chan []byte) error {
 	return nil
 }
 
-func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, connBytes *bytes.Buffer, connec net.Conn) {
+func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, wit *types.Witness, connBytes *bytes.Buffer, connec net.Conn) {
 	tempCon := Connection{}
 
 	rErr := tempCon.ResolveData(<-data)
@@ -561,6 +561,8 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 			finished <- true
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
+
+			consensus.WitnessTransaction(tx, wit)
 			Ch.AddTransaction(tx)
 
 			common.ThrowSuccess("found transaction: ")

@@ -56,6 +56,7 @@ func (wallet Wallet) findSent(Ch *Chain) []*Transaction {
 	for x != len(Ch.Transactions) {
 		if Ch.Transactions[x].SendingAccount.Address == wallet.PublicKey {
 			wallet.Transactions = append(wallet.Transactions, Ch.Transactions[x])
+			wallet.Balance -= *Ch.Transactions[x].Data.Amount
 		}
 		x++
 	}
@@ -69,6 +70,7 @@ func (wallet Wallet) findReceived(Ch *Chain) []*Transaction {
 	for x != len(Ch.Transactions) {
 		if *Ch.Transactions[x].Data.Recipient == wallet.PublicKey {
 			wallet.Transactions = append(wallet.Transactions, Ch.Transactions[x])
+			wallet.Balance += *Ch.Transactions[x].Data.Amount
 		}
 		x++
 	}

@@ -118,6 +118,8 @@ func main() {
 		if *relayFlag || *hostFlag || *fullChainFlag {
 			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
 
+			(*testchain).Base = 10
+
 			//Creating new wallet:
 
 			wallet = *types.NewWallet(testchain)
@@ -129,7 +131,7 @@ func main() {
 
 			//Creating transaction, contract, chain
 
-			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
+			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 			//Adding witness, transaction to chain
 
@@ -150,7 +152,7 @@ func main() {
 				networking.RelayChain(testDesChain, db)
 			} else if *hostFlag {
 				fmt.Println("attempting to host")
-				networking.HostChain(testDesChain, db, *loopFlag)
+				networking.HostChain(testDesChain, &witness, db, *loopFlag)
 			}
 		}
 
@@ -264,6 +266,7 @@ func main() {
 
 /*
 	TODO
+	- create transaction for reward
 	- node registration
 	- wallets
 */
