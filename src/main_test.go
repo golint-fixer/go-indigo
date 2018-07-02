@@ -31,16 +31,6 @@ func TestRelayTx(t *testing.T) {
 		t.Errorf("Node database creation failed: %s", err.Error())
 	}
 
-	//Creating new account:
-
-	accountAddress := common.HexToAddress("4920616d204d697473756b6f204d6567756d69")
-	account := types.NewAccount(accountAddress)
-
-	//Creating witness data:
-
-	signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
-	witness := types.NewWitness(1000, signature, 100)
-
 	//Creating transaction, contract, chain
 
 	eDb, err := discovery.NewNodeDatabase(tsfRef, "")
@@ -59,11 +49,20 @@ func TestRelayTx(t *testing.T) {
 	testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
 	sErr := testchain.WriteChainToMemory(common.GetCurrentDir())
 
+	//Creating new account:
+
+	wallet := *types.NewWallet(&testchain)
+
+	//Creating witness data:
+
+	signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
+	witness := types.NewWitness(1000, signature, 100)
+
 	if sErr != nil {
 		t.Errorf("Chain serialization failed: %s", sErr.Error())
 	}
 
-	test := types.NewTransaction(uint64(1), *account, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+	test := types.NewTransaction(&testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 	//Adding witness, transaction to chain
 
