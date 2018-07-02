@@ -10,6 +10,7 @@ type Witness struct {
 	WitnessedTxCount int       `json:"witness reputation"`
 	WitnessSignature Signature `json:"witness signature"`
 	WitnessAge       int       `json:"witness age"`
+	WitnessAccount   *Account  `json:"witness account"`
 }
 
 // getWitnessTime - return current time for use in witness

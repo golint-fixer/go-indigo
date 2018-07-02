@@ -117,6 +117,7 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) error {
 			common.ThrowSuccess("tx passed checks; relaying")
 			txBytes := new(bytes.Buffer)
 			json.NewEncoder(txBytes).Encode(Tx)
+			time.Sleep(20 * time.Millisecond)
 			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
 
 			return nil

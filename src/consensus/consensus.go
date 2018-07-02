@@ -8,8 +8,14 @@ import (
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified
-func WitnessTransaction(tx *types.Transaction, witness *types.Witness) {
+func WitnessTransaction(ch *types.Chain, wallet *types.Wallet, tx *types.Transaction, witness *types.Witness) {
 	if VerifyTransaction(tx) {
+		if tx.Verifications == 1 {
+			types.NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
+			WitnessTransaction(&tx, &witness)
+			(*ch).AddTransaction(&tx)
+		}
+
 		tx.Weight += *CalculateWitnessWeight(witness)
 		tx.Verifications++
 

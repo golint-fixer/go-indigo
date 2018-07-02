@@ -25,6 +25,12 @@ type Identifier []byte
 // Weight - data representing computational power for one transaction
 type Weight *int
 
+// URL - API available reference to network account
+type URL struct {
+	Scheme string
+	Path   string
+}
+
 // BytesToAddress - Set address instance to byte array.
 func BytesToAddress(b []byte) Address {
 	var a Address
@@ -79,10 +85,4 @@ func Hex2Bytes(str string) []byte {
 	h, _ := hex.DecodeString(str)
 
 	return h
-}
-
-// URL - API available reference to network account
-type URL struct {
-	Scheme string
-	Path   string
 }
