@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -298,16 +299,18 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 		<-finished
 	*/
 
-	var message bytes.Buffer
+	message, err := ioutil.ReadAll(connec)
 
-	io.Copy(&message, connec)
+	if err != nil {
+		return nil, err
+	}
 
 	if err != nil {
 		common.ThrowWarning("conn err: " + err.Error())
 		return nil, err
 	}
 
-	decomp, err := common.DecompressBytes(message.Bytes())
+	decomp, err := common.DecompressBytes(message)
 
 	tempCon.ResolveData(decomp)
 
@@ -387,16 +390,18 @@ func (conn *Connection) attempt() error {
 		return err
 	}
 
-	//connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
-	connec.Write(connBytes.Bytes()) // Write connection meta
+	connec.SetDeadline(time.Now().Add(timeout)) // Set timeout
+	connec.Write(connBytes.Bytes())             // Write connection meta
 
-	finished := make(chan bool)
+	//finished := make(chan bool)
 
 	fmt.Println("started")
 
-	go waitForClose(connec, finished)
+	/*
+		go waitForClose(connec, finished)
 
-	<-finished
+		<-finished
+	*/
 
 	fmt.Println("finished")
 
@@ -589,7 +594,9 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 
 			finished <- true
 		}
+		finished <- true
 	}
+	finished <- true
 }
 
 func resolveConnectionData(conn net.Conn, buf chan []byte) error {

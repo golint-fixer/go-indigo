@@ -265,6 +265,10 @@ func main() {
 }
 
 /*
+	FINIDINGS:
+	- relaychain fine
+	- fetch fine
+	- relay fails
 	TODO
 	- create transaction for reward
 	- node registration
