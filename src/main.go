@@ -274,7 +274,6 @@ func main() {
 	- add initialization method for chains that includes coin counts
 	- add method to claim wallet from onchain wallet
 	- add method to read wallet from gob
-	- create transaction for reward
 	- node registration
 	- wallets
 */
