@@ -55,7 +55,7 @@ func TestRelayTx(t *testing.T) {
 	//Creating witness data:
 
 	signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
-	witness := types.NewWitness(1000, signature, 100)
+	witness := types.NewWitness(1000, signature, 100, wallet.Account)
 
 	if sErr != nil {
 		t.Errorf("Chain serialization failed: %s", sErr.Error())

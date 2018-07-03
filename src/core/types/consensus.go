@@ -10,10 +10,7 @@ import (
 func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
 	if VerifyTransaction(tx) {
 		if tx.Verifications == 1 {
-			NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
-			go WitnessTransaction(ch, wallet, tx, witness)
-			(*ch).AddTransaction(tx)
-			Relay(tx, ch.NodeDb)
+			go handleReward(ch, wallet, tx, witness)
 		}
 
 		tx.Weight += *CalculateWitnessWeight(witness)
@@ -36,7 +33,13 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 	}
 }
 
-func HandleReward(ch *Chain, wallet *Wallet, tx *Transa)
+// handleReward - perform needed actions to account for a reward
+func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
+	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
+	go WitnessTransaction(ch, wallet, tx, witness)
+	(*ch).AddTransaction(nTx)
+	Relay(nTx, ch.NodeDb)
+}
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
 func CalculateWitnessWeight(witness *Witness) *int {

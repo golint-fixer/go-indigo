@@ -19,6 +19,6 @@ func getWitnessTime() time.Time {
 }
 
 // NewWitness - create & return new witness instance
-func NewWitness(WitnessedTxCount int, WitnessSignature Signature, WitnessAge int) Witness {
-	return Witness{WitnessTime: getWitnessTime(), WitnessedTxCount: WitnessedTxCount, WitnessSignature: WitnessSignature, WitnessAge: WitnessAge}
+func NewWitness(WitnessedTxCount int, WitnessSignature Signature, WitnessAge int, WitnessAccount *Account) Witness {
+	return Witness{WitnessTime: getWitnessTime(), WitnessedTxCount: WitnessedTxCount, WitnessSignature: WitnessSignature, WitnessAge: WitnessAge, WitnessAccount: WitnessAccount}
 }

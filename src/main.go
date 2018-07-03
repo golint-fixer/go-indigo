@@ -126,7 +126,7 @@ func main() {
 			//Creating witness data:
 
 			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
-			witness := types.NewWitness(1000, signature, 100)
+			witness := types.NewWitness(1000, signature, 100, wallet.Account)
 
 			//Creating transaction, contract, chain
 
@@ -160,7 +160,7 @@ func main() {
 			wallet := types.NewWallet(chain)
 
 			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
-			witness := types.NewWitness(1000, signature, 100)
+			witness := types.NewWitness(1000, signature, 100, wallet.Account)
 
 			fmt.Println("listening")
 			LatestTransaction := networking.ListenRelay(chain, wallet, &witness)
@@ -271,6 +271,7 @@ func main() {
 
 /*
 	TODO
+	- add method to read wallet from gob
 	- create transaction for reward
 	- node registration
 	- wallets
