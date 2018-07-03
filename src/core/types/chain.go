@@ -30,18 +30,22 @@ type Chain struct {
 
 // AddTransaction - Add transaction to specified chain object
 func (RefChain *Chain) AddTransaction(Transaction *Transaction) {
-	RefChain.Transactions = append(RefChain.Transactions, Transaction)
+	if VerifyTransaction(Transaction) {
+		RefChain.Transactions = append(RefChain.Transactions, Transaction)
 
-	if Transaction.ChainVersion == 0 {
-		RefChain.Version++
-		Transaction.ChainVersion = RefChain.Version
-	} else if Transaction.ChainVersion > RefChain.Version {
-		if (Transaction.ChainVersion - RefChain.Version) == 1 {
-			RefChain.Version = Transaction.ChainVersion
+		if Transaction.ChainVersion == 0 {
+			RefChain.Version++
+			Transaction.ChainVersion = RefChain.Version
+		} else if Transaction.ChainVersion > RefChain.Version {
+			if (Transaction.ChainVersion - RefChain.Version) == 1 {
+				RefChain.Version = Transaction.ChainVersion
+			}
 		}
-	}
 
-	fmt.Println("transaction added to chain")
+		fmt.Println("transaction added to chain")
+
+		RefChain.WriteChainToMemory(common.GetCurrentDir())
+	}
 }
 
 // FindUnverifiedTransactions - Browse chain for most recent unverified transactions
@@ -98,4 +102,15 @@ func DecodeChainFromBytes(b []byte) (*Chain, error) {
 	}
 
 	return &plCh, nil
+}
+
+// VerifyTransaction - checks validity of transaction, returning bool
+func VerifyTransaction(tx *Transaction) bool {
+	balance := GetBalance(tx.SendingAccount)
+	amountTransacted := *tx.Data.Amount
+
+	if balance <= amountTransacted {
+		return true
+	}
+	return false
 }

@@ -1,19 +1,20 @@
-package consensus
+package types
 
 import (
 	"reflect"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/core/types"
+	"github.com/mitsukomegumi/indo-go/src/networking"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified
-func WitnessTransaction(ch *types.Chain, wallet *types.Wallet, tx *types.Transaction, witness *types.Witness) {
+func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
 	if VerifyTransaction(tx) {
 		if tx.Verifications == 1 {
-			types.NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
-			WitnessTransaction(&tx, &witness)
-			(*ch).AddTransaction(&tx)
+			NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
+			WitnessTransaction(ch, wallet, tx, witness)
+			(*ch).AddTransaction(tx)
+			networking.Relay(tx)
 		}
 
 		tx.Weight += *CalculateWitnessWeight(witness)
@@ -37,14 +38,14 @@ func WitnessTransaction(ch *types.Chain, wallet *types.Wallet, tx *types.Transac
 }
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
-func CalculateWitnessWeight(witness *types.Witness) *int {
+func CalculateWitnessWeight(witness *Witness) *int {
 	witnessWeight := int(witness.WitnessedTxCount / witness.WitnessAge)
 	return &witnessWeight
 }
 
 // VerifyTransaction - checks validity of transaction, returning bool
-func VerifyTransaction(tx *types.Transaction) bool {
-	balance := types.GetBalance(tx.SendingAccount)
+func VerifyTransaction(tx *Transaction) bool {
+	balance := GetBalance(tx.SendingAccount)
 	amountTransacted := *tx.Data.Amount
 
 	if balance <= amountTransacted {

@@ -71,8 +71,6 @@ func TestRelayTx(t *testing.T) {
 
 	//Test chain serialization
 
-	testchain.WriteChainToMemory(common.GetCurrentDir())
-
 	fmt.Println("attempting to relay")
 	rErr := networking.Relay(test, db)
 

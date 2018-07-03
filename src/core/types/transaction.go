@@ -92,7 +92,7 @@ func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *
 }
 
 // DecodeTxFromBytes - decode transaction from specified byte array, returning transaction
-func DecodeTxFromBytes(b []byte) *Transaction {
+func DecodeTxFromBytes(wit Witness, b []byte) *Transaction {
 	plTx := Transaction{}
 	err := json.NewDecoder(bytes.NewReader(b)).Decode(&plTx)
 
@@ -100,6 +100,8 @@ func DecodeTxFromBytes(b []byte) *Transaction {
 		fmt.Println(err)
 		panic(err)
 	}
+
+	WitnessTransaction(plTx, wit)
 
 	return &plTx
 }

@@ -2,7 +2,7 @@
 
 Core go implementation of Indo protocol.
 
-[![Build Status](https://travis-ci.com/MitsukoMegumi/indo-go.svg?branch=master)](https://travis-ci.com/MitsukoMegumi/indo-go)
+[![Build Status](https://travis-ci.com/mitsukomegumi/indo-go.svg?branch=master)](https://travis-ci.com/mitsukomegumi/indo-go)
 
 ## Our Mission
 

@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/consensus"
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
 
@@ -343,7 +342,6 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
 func ListenRelayWithAdd(Ch *types.Chain, Wit *types.Witness, Db *discovery.NodeDatabase) {
 	tx := ListenRelay()
-	consensus.WitnessTransaction(tx, Wit)
 	Ch.AddTransaction(tx)
 	Ch.WriteChainToMemory(common.GetCurrentDir())
 	Relay(tx, Db)
@@ -568,7 +566,6 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 		} else if tempCon.Type == "relay" {
 			tx := types.DecodeTxFromBytes(tempCon.Data)
 
-			consensus.WitnessTransaction(tx, wit)
 			Ch.AddTransaction(tx)
 
 			common.ThrowSuccess("found transaction: ")
