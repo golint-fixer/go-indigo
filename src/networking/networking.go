@@ -141,7 +141,7 @@ func RelayChain(Ch *types.Chain, Db *discovery.NodeDatabase) error {
 }
 
 // HostChain - host localized chain to forwarded port
-func HostChain(Ch *types.Chain, wit *types.Witness, Db *discovery.NodeDatabase, Loop bool) {
+func HostChain(Wallet *types.Wallet, Ch *types.Chain, wit *types.Witness, Db *discovery.NodeDatabase, Loop bool) {
 	if reflect.ValueOf(Ch.NodeDb).IsNil() {
 		*Ch = types.Chain{ParentContract: Ch.ParentContract, Identifier: Ch.Identifier, NodeDb: Db, Transactions: Ch.Transactions, Version: Ch.Version}
 	}
@@ -150,17 +150,17 @@ func HostChain(Ch *types.Chain, wit *types.Witness, Db *discovery.NodeDatabase, 
 		for {
 			chBytes := new(bytes.Buffer)
 			json.NewEncoder(chBytes).Encode(Ch)
-			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch, wit)
+			newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Wallet, Ch, wit)
 		}
 	} else {
 		chBytes := new(bytes.Buffer)
 		json.NewEncoder(chBytes).Encode(Ch)
-		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Ch, wit)
+		newConnection(Db.SelfAddr, "", "statichostfullchain", chBytes.Bytes()).start(Wallet, Ch, wit)
 	}
 }
 
 // ListenRelay - listen for transaction relays, relay to full node or host
-func ListenRelay() *types.Transaction {
+func ListenRelay(Ch *types.Chain, Wallet *types.Wallet, Wit *types.Witness) *types.Transaction {
 	tempCon := Connection{}
 
 	ln, err := net.Listen("tcp", ":3000")
@@ -195,7 +195,7 @@ func ListenRelay() *types.Transaction {
 	if tempCon.Type == "relay" {
 		conn.Close()
 		ln.Close()
-		return types.DecodeTxFromBytes(tempCon.Data)
+		return types.DecodeTxFromBytes(Wallet, Ch, Wit, tempCon.Data)
 	}
 
 	common.ThrowWarning("chain relay found; wanted transaction")
@@ -340,8 +340,8 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 }
 
 // ListenRelayWithAdd - listen for transaction relays, add to local chain
-func ListenRelayWithAdd(Ch *types.Chain, Wit *types.Witness, Db *discovery.NodeDatabase) {
-	tx := ListenRelay()
+func ListenRelayWithAdd(Ch *types.Chain, Wit *types.Witness, Wallet *types.Wallet, Db *discovery.NodeDatabase) {
+	tx := ListenRelay(Ch, Wallet, Wit)
 	Ch.AddTransaction(tx)
 	Ch.WriteChainToMemory(common.GetCurrentDir())
 	Relay(tx, Db)
@@ -408,7 +408,7 @@ func (conn *Connection) attempt() error {
 	return nil
 }
 
-func (conn *Connection) start(Ch *types.Chain, wit *types.Witness) {
+func (conn *Connection) start(Wallet *types.Wallet, Ch *types.Chain, wit *types.Witness) {
 	ln, err := net.Listen("tcp", ":3000")
 	if err != nil {
 		fmt.Println(err) // Print panic meta
@@ -426,7 +426,7 @@ func (conn *Connection) start(Ch *types.Chain, wit *types.Witness) {
 
 	data := make(chan []byte, 1000000)
 
-	go handleRequest(connec, data, conn, Ch, wit, finished)
+	go handleRequest(connec, data, conn, Wallet, Ch, wit, finished)
 
 	<-finished
 
@@ -495,7 +495,7 @@ func waitForClose(conn net.Conn, finished chan bool) {
 	}
 }
 
-func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *types.Chain, wit *types.Witness, finished chan bool) {
+func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Wallet *types.Wallet, Ch *types.Chain, wit *types.Witness, finished chan bool) {
 	conn.AddEvent("started")
 	connBytes := new(bytes.Buffer)
 	json.NewEncoder(connBytes).Encode(conn)
@@ -509,7 +509,7 @@ func handleRequest(connec net.Conn, data chan []byte, conn *Connection, Ch *type
 		panic(err)
 	}
 
-	go finalizeResolvedConnection(data, finishedAgainBool, Ch, wit, connBytes, connec) // call from resolveconnection routine
+	go finalizeResolvedConnection(data, finishedAgainBool, Wallet, Ch, wit, connBytes, connec) // call from resolveconnection routine
 
 	<-finishedAgainBool
 
@@ -526,7 +526,7 @@ func resolveConnection(conn net.Conn, buf chan []byte) error {
 	return nil
 }
 
-func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.Chain, wit *types.Witness, connBytes *bytes.Buffer, connec net.Conn) {
+func finalizeResolvedConnection(data chan []byte, finished chan bool, Wallet *types.Wallet, Ch *types.Chain, wit *types.Witness, connBytes *bytes.Buffer, connec net.Conn) {
 	tempCon := Connection{}
 
 	rErr := tempCon.ResolveData(<-data)
@@ -564,7 +564,7 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Ch *types.
 
 			finished <- true
 		} else if tempCon.Type == "relay" {
-			tx := types.DecodeTxFromBytes(tempCon.Data)
+			tx := types.DecodeTxFromBytes(Wallet, Ch, wit, tempCon.Data)
 
 			Ch.AddTransaction(tx)
 

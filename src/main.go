@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/consensus"
 	"github.com/mitsukomegumi/indo-go/src/contracts"
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking"
@@ -135,7 +134,7 @@ func main() {
 
 			//Adding witness, transaction to chain
 
-			consensus.WitnessTransaction(test, &witness)
+			types.WitnessTransaction(testchain, &wallet, test, &witness)
 			testchain.AddTransaction(test)
 
 			//Test chain serialization
@@ -152,13 +151,19 @@ func main() {
 				networking.RelayChain(testDesChain, db)
 			} else if *hostFlag {
 				fmt.Println("attempting to host")
-				networking.HostChain(testDesChain, &witness, db, *loopFlag)
+				networking.HostChain(&wallet, testDesChain, &witness, db, *loopFlag)
 			}
 		}
 
 		if *listenFlag {
+			chain := types.ReadChainFromMemory(common.GetCurrentDir())
+			wallet := types.NewWallet(chain)
+
+			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
+			witness := types.NewWitness(1000, signature, 100)
+
 			fmt.Println("listening")
-			LatestTransaction := networking.ListenRelay()
+			LatestTransaction := networking.ListenRelay(chain, wallet, &witness)
 			fmt.Println(LatestTransaction)
 
 			// Dump fetched tx

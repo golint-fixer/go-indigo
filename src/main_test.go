@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/consensus"
 	"github.com/mitsukomegumi/indo-go/src/contracts"
 	"github.com/mitsukomegumi/indo-go/src/core/types"
 	"github.com/mitsukomegumi/indo-go/src/networking"
@@ -66,7 +65,7 @@ func TestRelayTx(t *testing.T) {
 
 	//Adding witness, transaction to chain
 
-	consensus.WitnessTransaction(test, &witness)
+	types.WitnessTransaction(&testchain, &wallet, test, &witness)
 	testchain.AddTransaction(test)
 
 	//Test chain serialization

@@ -103,14 +103,3 @@ func DecodeChainFromBytes(b []byte) (*Chain, error) {
 
 	return &plCh, nil
 }
-
-// VerifyTransaction - checks validity of transaction, returning bool
-func VerifyTransaction(tx *Transaction) bool {
-	balance := GetBalance(tx.SendingAccount)
-	amountTransacted := *tx.Data.Amount
-
-	if balance <= amountTransacted {
-		return true
-	}
-	return false
-}

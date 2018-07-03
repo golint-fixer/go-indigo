@@ -4,7 +4,6 @@ import (
 	"reflect"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/networking"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified
@@ -12,9 +11,9 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 	if VerifyTransaction(tx) {
 		if tx.Verifications == 1 {
 			NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
-			WitnessTransaction(ch, wallet, tx, witness)
+			go WitnessTransaction(ch, wallet, tx, witness)
 			(*ch).AddTransaction(tx)
-			networking.Relay(tx)
+			Relay(tx, ch.NodeDb)
 		}
 
 		tx.Weight += *CalculateWitnessWeight(witness)
