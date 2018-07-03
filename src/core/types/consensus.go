@@ -36,6 +36,8 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 	}
 }
 
+func HandleReward(ch *Chain, wallet *Wallet, tx *Transa)
+
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
 func CalculateWitnessWeight(witness *Witness) *int {
 	witnessWeight := int(witness.WitnessedTxCount / witness.WitnessAge)
