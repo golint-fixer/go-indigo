@@ -104,3 +104,26 @@ func (wallet Wallet) generateSeed() []string {
 
 	return []string{timeStamp.String(), randStr}
 }
+
+// WriteToMemory - Write specified wallet to memory
+func (wallet Wallet) WriteToMemory(dir string) error {
+	err := common.WriteGob(dir, wallet)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ReadWalletFromMemory - read wallet from specified directory
+func ReadWalletFromMemory(dir string) (Wallet, error) {
+	wallet := Wallet{}
+	err := common.ReadGob(dir, wallet)
+
+	if err != nil {
+		return wallet, err
+	}
+
+	return wallet, nil
+}

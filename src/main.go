@@ -123,6 +123,12 @@ func main() {
 
 			wallet = *types.NewWallet(testchain)
 
+			b, err := json.MarshalIndent(wallet, "", "  ")
+			if err != nil {
+				panic(err)
+			}
+			os.Stdout.Write(b)
+
 			//Creating witness data:
 
 			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
@@ -144,13 +150,13 @@ func main() {
 			testDesChain := types.ReadChainFromMemory(common.GetCurrentDir())
 
 			if *relayFlag {
-				fmt.Println("attempting to relay")
+				fmt.Println("\nattempting to relay")
 				networking.Relay(test, db)
 			} else if *fullChainFlag {
-				fmt.Println("attempting to relay")
+				fmt.Println("\nattempting to relay")
 				networking.RelayChain(testDesChain, db)
 			} else if *hostFlag {
-				fmt.Println("attempting to host")
+				fmt.Println("\nattempting to host")
 				networking.HostChain(&wallet, testDesChain, &witness, db, *loopFlag)
 			}
 		}
