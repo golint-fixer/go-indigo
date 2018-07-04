@@ -556,7 +556,7 @@ func finalizeResolvedConnection(data chan []byte, finished chan bool, Wallet *ty
 			os.Stdout.Write(b)
 
 			if !reflect.ValueOf(Ch.NodeDb.NodeAddress).IsNil() {
-				common.ThrowSuccess("found node: " + Ch.NodeDb.NodeAddress[len(Ch.NodeDb.NodeAddress)-1])
+				common.ThrowSuccess("\nfound node: " + Ch.NodeDb.NodeAddress[len(Ch.NodeDb.NodeAddress)-1])
 			}
 
 			Ch.WriteChainToMemory(common.GetCurrentDir())
