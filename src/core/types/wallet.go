@@ -1,6 +1,8 @@
 package types
 
 import (
+	"errors"
+
 	"github.com/mitsukomegumi/indo-go/src/common"
 )
 
@@ -18,6 +20,16 @@ type Wallet struct {
 	Transactions []*Transaction `json:"transactions"`
 
 	Account *Account `json:"account"`
+}
+
+// ClaimWallet - verifies private keys of specified public key, returns wallet of specified keys
+func ClaimWallet(Ch *Chain, pub Address, Private string, PrivateKeySeeds []string) (Wallet, error) {
+	if common.CheckKeys(Private, PrivateKeySeeds, string(pub[:])) {
+		wallet := Wallet{PrivateKeySeeds: PrivateKeySeeds, PrivateKey: Private, PublicKey: pub, Balance: 0, Account: NewAccount(pub)}
+		wallet.ScanChain(Ch)
+		return wallet, nil
+	}
+	return Wallet{}, errors.New("invalid keys")
 }
 
 // NewWallet - create new wallet instance
@@ -45,12 +57,10 @@ func (wallet Wallet) ScanChain(Ch *Chain) {
 	wallet.findSent(Ch)
 	wallet.findReceived(Ch)
 
-	acc := *wallet.Account
-
-	acc.Balance = wallet.Balance
+	wallet.Account.Balance = wallet.Balance
 }
 
-func (wallet Wallet) findSent(Ch *Chain) []*Transaction {
+func (wallet Wallet) findSent(Ch *Chain) {
 	x := wallet.LastVersion
 
 	for x != len(Ch.Transactions) {
@@ -61,10 +71,10 @@ func (wallet Wallet) findSent(Ch *Chain) []*Transaction {
 		x++
 	}
 
-	return nil
+	wallet.LastVersion = x
 }
 
-func (wallet Wallet) findReceived(Ch *Chain) []*Transaction {
+func (wallet Wallet) findReceived(Ch *Chain) {
 	x := wallet.LastVersion
 
 	for x != len(Ch.Transactions) {
@@ -75,7 +85,7 @@ func (wallet Wallet) findReceived(Ch *Chain) []*Transaction {
 		x++
 	}
 
-	return nil
+	wallet.LastVersion = x
 }
 
 func (wallet Wallet) generatePublicKey() string {

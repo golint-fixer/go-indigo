@@ -272,7 +272,6 @@ func main() {
 /*
 	TODO
 	- add initialization method for chains that includes coin counts
-	- add method to claim wallet from onchain wallet
 	- add method to read wallet from gob
 	- node registration
 	- wallets
