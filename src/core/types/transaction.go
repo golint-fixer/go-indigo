@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto"
 	"encoding/json"
+	"reflect"
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
@@ -19,23 +20,23 @@ type Transaction struct {
 
 	Contract *contracts.Contract `json:"contract"`
 
-	Verifications int `json:"confirmations"`
-	Weight        int `json:"weight"`
+	Verifications uint64  `json:"confirmations"`
+	Weight        float64 `json:"weight"`
 
 	InitialWitness *Witness
 
 	SendingAccount Account `json:"sending account"`
 
-	Reward int `json:"reward"`
+	Reward uint64 `json:"reward"`
 
-	ChainVersion int `json:"chainver"`
+	ChainVersion uint64 `json:"chainver"`
 }
 
 type transactiondata struct {
 	// Initialized in func:
 	Nonce     uint64    `json:"nonce" gencodec:"required"`
 	Recipient *Address  `json:"recipient"`
-	Amount    *int      `json:"value" gencodec:"required"`
+	Amount    *float64  `json:"value" gencodec:"required"`
 	Payload   []byte    `json:"payload" gencodec:"required"`
 	Time      time.Time `json:"timestamp" gencodec:"required"`
 	Extra     []byte    `json:"extraData" gencodec:"required"`
@@ -46,28 +47,28 @@ type transactiondata struct {
 }
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
-func NewTransaction(ch *Chain, nonce uint64, SendingAccount Account, PrivateKey string, PrivateKeySeeds []string, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func NewTransaction(ch *Chain, nonce uint64, SendingAccount Account, PrivateKey string, PrivateKeySeeds []string, to Address, amount *float64, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	if common.CheckKeys(PrivateKey, PrivateKeySeeds, SendingAccount.Address) {
 		return newTransaction(ch, nonce, SendingAccount, &to, amount, data, contract, extra)
 	}
 
-	zeroVal := 0
+	zeroVal := float64(0)
 
 	return newTransaction(ch, nonce, SendingAccount, &to, &zeroVal, data, contract, extra)
 }
 
 //NewContractCreation - Create new instance of transaction struct specifying contract creation arguments.
-func NewContractCreation(ch *Chain, nonce uint64, IssuingAccount Account, amount *int, data []byte, extra []byte) *Transaction {
+func NewContractCreation(ch *Chain, nonce uint64, IssuingAccount Account, amount *float64, data []byte, extra []byte) *Transaction {
 	return newTransaction(ch, nonce, IssuingAccount, nil, amount, data, nil, extra)
 }
 
-func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *float64, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
 	hash := crypto.SHA256.New()
 	txdata := transactiondata{
 		Nonce:       nonce,
 		Recipient:   to,
 		Payload:     data,
-		Amount:      new(int),
+		Amount:      new(float64),
 		Time:        time.Now().UTC(),
 		Extra:       extra,
 		InitialHash: &Hash{},
@@ -82,7 +83,7 @@ func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *
 		txdata.Amount = amount
 	}
 
-	tx := Transaction{Data: txdata, Contract: contract, Weight: int(0), Verifications: int(0), SendingAccount: from, Reward: 0}
+	tx := Transaction{Data: txdata, Contract: contract, Weight: float64(0), Verifications: uint64(0), SendingAccount: from, Reward: 0}
 
 	tx.Reward = tx.calculateReward(Ch)
 
@@ -106,11 +107,18 @@ func DecodeTxFromBytes(wallet *Wallet, ch *Chain, wit *Witness, b []byte) *Trans
 	return &plTx
 }
 
-func (tx Transaction) calculateReward(Ch *Chain) int {
+func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 	max := Ch.MaxCirculating
 	curr := Ch.Circulating
 	base := Ch.Base
-	lastreward := Ch.Transactions[len(Ch.Transactions)-1].Reward
+
+	var lastreward uint64
+
+	if !reflect.ValueOf(Ch.Transactions).IsNil() {
+		lastreward = Ch.Transactions[len(Ch.Transactions)-1].Reward
+	} else {
+		lastreward = base
+	}
 
 	if lastreward != 0 && max != 0 && base != 0 {
 		if curr+lastreward/2 > max {

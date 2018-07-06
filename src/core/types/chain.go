@@ -20,12 +20,12 @@ type Chain struct {
 
 	Transactions []*Transaction `json:"transactions"`
 
-	MaxCirculating int `json:"maxcirculating"`
-	Circulating    int `json:"circulating"`
+	MaxCirculating uint64 `json:"maxcirculating"`
+	Circulating    uint64 `json:"circulating"`
 
-	Base int `json:"base"`
+	Base uint64 `json:"base"`
 
-	Version int `json:"version"`
+	Version uint64 `json:"version"`
 }
 
 // AddTransaction - Add transaction to specified chain object

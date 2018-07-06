@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -126,4 +127,9 @@ func CheckKeys(priv string, seeds []string, pub [20]byte) bool {
 		return true
 	}
 	return false
+}
+
+// FloatToString - converts float to string
+func FloatToString(val float64) string {
+	return strconv.FormatFloat(val, 'f', -1, 64)
 }

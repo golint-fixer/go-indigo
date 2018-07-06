@@ -28,6 +28,7 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
+		- make sure to read existing wallet on startup, rather than create new one
 		- add initialization method for chains that includes coin counts
 		- add method to read wallet from gob
 		- create reward transactions
@@ -138,7 +139,7 @@ func main() {
 
 			//Creating transaction, contract, chain
 
-			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
+			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.FloatToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 			//Adding witness, transaction to chain
 
