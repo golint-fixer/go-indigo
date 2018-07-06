@@ -12,10 +12,10 @@ type Wallet struct {
 	PrivateKey      string   `json:"privatekeys"`
 	PublicKey       Address  `json:"publickeys"` // Also known as a wallet address
 
-	Balance int `json:"balance"`
+	Balance float64 `json:"balance"`
 
-	OriginVersion int `json:"origin"`  // Chain version at wallet creation
-	LastVersion   int `json:"version"` // Last scanned block with version number
+	OriginVersion uint64 `json:"origin"`  // Chain version at wallet creation
+	LastVersion   uint64 `json:"version"` // Last scanned block with version number
 
 	Transactions []*Transaction `json:"transactions"`
 
@@ -63,7 +63,7 @@ func (wallet Wallet) ScanChain(Ch *Chain) {
 func (wallet Wallet) findSent(Ch *Chain) {
 	x := wallet.LastVersion
 
-	for x != len(Ch.Transactions) {
+	for x != uint64(len(Ch.Transactions)) {
 		if Ch.Transactions[x].SendingAccount.Address == wallet.PublicKey {
 			wallet.Transactions = append(wallet.Transactions, Ch.Transactions[x])
 			wallet.Balance -= *Ch.Transactions[x].Data.Amount
@@ -77,7 +77,7 @@ func (wallet Wallet) findSent(Ch *Chain) {
 func (wallet Wallet) findReceived(Ch *Chain) {
 	x := wallet.LastVersion
 
-	for x != len(Ch.Transactions) {
+	for x != uint64(len(Ch.Transactions)) {
 		if *Ch.Transactions[x].Data.Recipient == wallet.PublicKey {
 			wallet.Transactions = append(wallet.Transactions, Ch.Transactions[x])
 			wallet.Balance += *Ch.Transactions[x].Data.Amount

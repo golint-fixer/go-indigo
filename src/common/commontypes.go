@@ -61,7 +61,13 @@ func FromHex(s string) []byte {
 }
 
 // IntToPointer - return int with pointer
-func IntToPointer(i int) *int {
+func IntToPointer(i int64) *int64 {
+	p := i
+	return &p
+}
+
+// FloatToPointer - return float with pointer
+func FloatToPointer(i float64) *float64 {
 	p := i
 	return &p
 }
