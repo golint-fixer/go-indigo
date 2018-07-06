@@ -28,9 +28,11 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
-		[DONE] - test node db serialization
-		[DONE] - add version to chain struct (increments on each transaction)
-		[DONE] - add unit testing
+		- add initialization method for chains that includes coin counts
+		- add method to read wallet from gob
+		- create reward transactions
+		- node registration
+		- wallets
 */
 
 func main() {
@@ -274,11 +276,3 @@ func main() {
 		}
 	}
 }
-
-/*
-	TODO
-	- add initialization method for chains that includes coin counts
-	- add method to read wallet from gob
-	- node registration
-	- wallets
-*/

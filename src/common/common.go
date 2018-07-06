@@ -118,10 +118,11 @@ func SHA256(b []byte) string {
 }
 
 // CheckKeys - check that specified private key combinations match public key
-func CheckKeys(priv string, seeds []string, pub string) bool {
+func CheckKeys(priv string, seeds []string, pub [20]byte) bool {
+
 	combined := seeds[0] + seeds[1]
 
-	if SHA256([]byte(priv+combined)) == pub {
+	if BytesToAddress([]byte(SHA256([]byte(priv+combined)))) == pub {
 		return true
 	}
 	return false

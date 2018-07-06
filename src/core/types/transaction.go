@@ -47,7 +47,7 @@ type transactiondata struct {
 
 //NewTransaction - Create new instance of transaction struct with specified arguments.
 func NewTransaction(ch *Chain, nonce uint64, SendingAccount Account, PrivateKey string, PrivateKeySeeds []string, to Address, amount *int, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
-	if common.CheckKeys(PrivateKey, PrivateKeySeeds, string(SendingAccount.Address[:])) {
+	if common.CheckKeys(PrivateKey, PrivateKeySeeds, SendingAccount.Address) {
 		return newTransaction(ch, nonce, SendingAccount, &to, amount, data, contract, extra)
 	}
 

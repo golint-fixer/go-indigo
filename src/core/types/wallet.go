@@ -24,7 +24,7 @@ type Wallet struct {
 
 // ClaimWallet - verifies private keys of specified public key, returns wallet of specified keys
 func ClaimWallet(Ch *Chain, pub Address, Private string, PrivateKeySeeds []string) (Wallet, error) {
-	if common.CheckKeys(Private, PrivateKeySeeds, string(pub[:])) {
+	if common.CheckKeys(Private, PrivateKeySeeds, pub) {
 		wallet := Wallet{PrivateKeySeeds: PrivateKeySeeds, PrivateKey: Private, PublicKey: pub, Balance: 0, Account: NewAccount(pub)}
 		wallet.ScanChain(Ch)
 		return wallet, nil
