@@ -3,13 +3,13 @@ package types
 // Account - represents account on the network
 type Account struct {
 	Address      Address        `json:"address"`
-	Balance      int            `json:"balance"`
+	Balance      float64        `json:"balance"`
 	URL          URL            `json:"url"`
 	Transactions []*Transaction `json:"account transactions"`
 }
 
 // GetBalance - returns balance of specified account.
-func GetBalance(account Account) int {
+func GetBalance(account Account) float64 {
 	return account.Balance
 }
 

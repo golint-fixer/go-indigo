@@ -20,7 +20,7 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 			tx.InitialWitness = witness
 		}
 
-		common.ThrowWarning("Added witness; transaction verified with weight " + string(tx.Weight))
+		common.ThrowWarning("Added witness; transaction verified with weight " + common.FloatToString(tx.Weight))
 	} else {
 		tx.Weight -= *CalculateWitnessWeight(witness)
 		tx.Verifications++
@@ -29,21 +29,22 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 			tx.InitialWitness = witness
 		}
 
-		common.ThrowWarning("Added witness, removed weight; transaction illegitimate with weight " + string(tx.Weight))
+		common.ThrowWarning("Added witness, removed weight; transaction illegitimate with weight " + common.FloatToString(tx.Weight))
 	}
 }
 
 // handleReward - perform needed actions to account for a reward
 func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
-	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &tx.Reward, []byte("tx reward"), nil, []byte("tx reward"))
+	rewardVal := float64(tx.Reward)
+	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &rewardVal, []byte("tx reward"), nil, []byte("tx reward"))
 	go WitnessTransaction(ch, wallet, tx, witness)
 	(*ch).AddTransaction(nTx)
 	Relay(nTx, ch.NodeDb)
 }
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
-func CalculateWitnessWeight(witness *Witness) *int {
-	witnessWeight := int(witness.WitnessedTxCount / witness.WitnessAge)
+func CalculateWitnessWeight(witness *Witness) *float64 {
+	witnessWeight := float64(witness.WitnessedTxCount / witness.WitnessAge)
 	return &witnessWeight
 }
 
