@@ -61,6 +61,7 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 // Relay - push localized or received transaction to further node
 func Relay(Tx *Transaction, Db *discovery.NodeDatabase) error {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
+		fmt.Println("test")
 		common.ThrowWarning("verifying tx on current chain")
 		fChain, err := FetchChain(Db)
 

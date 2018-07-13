@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	bootStrapNode1Addr = "10.144.4.68"
+	bootStrapNode1Addr = "108.6.212.149"
 )
 
 // NodeDatabase - struct holding arrays of IP addresses, node IDs, etc...
