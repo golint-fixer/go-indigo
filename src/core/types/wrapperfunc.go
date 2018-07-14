@@ -61,7 +61,6 @@ func (conn *Connection) AddEvent(Event ConnectionEvent) {
 // Relay - push localized or received transaction to further node
 func Relay(Tx *Transaction, Db *discovery.NodeDatabase) error {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
-		fmt.Println("test")
 		common.ThrowWarning("verifying tx on current chain")
 		fChain, err := FetchChain(Db)
 
@@ -70,11 +69,13 @@ func Relay(Tx *Transaction, Db *discovery.NodeDatabase) error {
 		}
 
 		if fChain.Transactions[len(fChain.Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
+			node := Db.FindNode()
+
 			common.ThrowSuccess("tx passed checks; relaying")
 			txBytes := new(bytes.Buffer)
 			json.NewEncoder(txBytes).Encode(Tx)
 			time.Sleep(20 * time.Millisecond)
-			newConnection(Db.SelfAddr, Db.FindNode(), "relay", txBytes.Bytes()).attempt()
+			newConnection(Db.SelfAddr, node, "relay", txBytes.Bytes()).attempt()
 
 			return nil
 		}

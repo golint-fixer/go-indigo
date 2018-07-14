@@ -64,7 +64,7 @@ func (wallet Wallet) findSent(Ch *Chain) {
 	x := wallet.LastVersion
 
 	for x != uint64(len(Ch.Transactions)) {
-		if Ch.Transactions[x].SendingAccount.Address == wallet.PublicKey {
+		if Ch.Transactions[x].SendingAccount.Address == wallet.PublicKey && string(Ch.Transactions[x].Data.Payload[:]) != "tx reward" {
 			wallet.Transactions = append(wallet.Transactions, Ch.Transactions[x])
 			wallet.Balance -= *Ch.Transactions[x].Data.Amount
 		}

@@ -28,6 +28,7 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
+		- fix double transaction witnessing
 		- make sure to read existing wallet on startup, rather than create new one
 		- add initialization method for chains that includes coin counts
 		- add method to read wallet from gob

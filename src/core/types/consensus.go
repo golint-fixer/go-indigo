@@ -9,12 +9,14 @@ import (
 // WitnessTransaction - add witness data to specified transaction if verified
 func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
 	if VerifyTransaction(tx) {
-		if tx.Verifications == 1 {
-			go handleReward(ch, wallet, tx, witness)
-		}
-
 		tx.Weight += *CalculateWitnessWeight(witness)
 		tx.Verifications++
+
+		if tx.Verifications == 1 && string(tx.Data.Payload[:]) != "tx reward" {
+			go handleReward(ch, wallet, tx, witness)
+		} else if string(tx.Data.Payload[:]) == "tx reward" && !reflect.ValueOf(tx.Data.Root).IsNil() {
+			*tx.Data.Root.Data.UnspentReward -= uint64(*tx.Data.Amount)
+		}
 
 		if reflect.ValueOf(tx.InitialWitness).IsNil() {
 			tx.InitialWitness = witness
@@ -37,7 +39,10 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
 	rewardVal := float64(tx.Reward)
 	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &rewardVal, []byte("tx reward"), nil, []byte("tx reward"))
-	WitnessTransaction(ch, wallet, tx, witness)
+	nTx.Data.Root = tx
+	nTx.Reward = 0
+
+	WitnessTransaction(ch, wallet, nTx, witness)
 	(*ch).AddTransaction(nTx)
 
 	err := Relay(nTx, ch.NodeDb)
@@ -59,6 +64,15 @@ func VerifyTransaction(tx *Transaction) bool {
 	amountTransacted := *tx.Data.Amount
 
 	if balance <= amountTransacted {
+		return true
+	} else if string(tx.Data.Payload[:]) == "tx reward" {
+		return verifyCoinbase(tx)
+	}
+	return false
+}
+
+func verifyCoinbase(tx *Transaction) bool {
+	if float64(*tx.Data.Root.Data.UnspentReward) == *tx.Data.Amount && string(tx.Data.Payload[:]) == "tx reward" {
 		return true
 	}
 	return false

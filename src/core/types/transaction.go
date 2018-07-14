@@ -34,12 +34,14 @@ type Transaction struct {
 
 type transactiondata struct {
 	// Initialized in func:
-	Nonce     uint64    `json:"nonce" gencodec:"required"`
-	Recipient *Address  `json:"recipient"`
-	Amount    *float64  `json:"value" gencodec:"required"`
-	Payload   []byte    `json:"payload" gencodec:"required"`
-	Time      time.Time `json:"timestamp" gencodec:"required"`
-	Extra     []byte    `json:"extraData" gencodec:"required"`
+	Root          *Transaction `json:"root" gencoded:"required"`
+	Nonce         uint64       `json:"nonce" gencodec:"required"`
+	Recipient     *Address     `json:"recipient" gencodec:"required"`
+	Amount        *float64     `json:"value" gencodec:"required"`
+	UnspentReward *uint64      `json:"unspent" gencoded:"required"`
+	Payload       []byte       `json:"payload" gencodec:"required"`
+	Time          time.Time    `json:"timestamp" gencodec:"required"`
+	Extra         []byte       `json:"extraData" gencodec:"required"`
 
 	// Initialized at intercept:
 	InitialHash *Hash `json:"hash" gencodec:"required"`
@@ -86,6 +88,7 @@ func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *
 	tx := Transaction{Data: txdata, Contract: contract, Weight: float64(0), Verifications: uint64(0), SendingAccount: from, Reward: 0}
 
 	tx.Reward = tx.calculateReward(Ch)
+	tx.Data.UnspentReward = &tx.Reward
 
 	(*Ch).Circulating += tx.Reward
 
@@ -113,6 +116,10 @@ func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 	base := Ch.Base
 
 	var lastreward uint64
+
+	if string(tx.Data.Payload[:]) == "tx reward" {
+		return 0
+	}
 
 	if !reflect.ValueOf(Ch.Transactions).IsNil() {
 		lastreward = Ch.Transactions[len(Ch.Transactions)-1].Reward
