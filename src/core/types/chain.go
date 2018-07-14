@@ -53,7 +53,7 @@ func (RefChain Chain) FindUnverifiedTransactions(TxCount int) []*Transaction {
 
 	var UnverifiedTransactions []*Transaction
 
-	x := len(RefChain.Transactions) - 1
+	x := len(RefChain.Transactions)
 
 	targetTxCount := TxCount + 1
 

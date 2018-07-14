@@ -37,7 +37,7 @@ func (db *NodeDatabase) FindNode() string {
 		return db.getBestNode()
 	}
 	common.ThrowWarning("nil db")
-	return "10.144.4.68"
+	return db.getBootstrap()
 }
 
 func (db *NodeDatabase) getBestNode() string {
@@ -45,7 +45,7 @@ func (db *NodeDatabase) getBestNode() string {
 		x := 0
 		bestMatchPingTime := db.NodePingTimeDB[0]
 		nodeIndex := 0
-		for x != len(db.NodeAddress)-1 {
+		for x != len(db.NodeAddress) {
 			if db.NodePingTimeDB[x].After(bestMatchPingTime) {
 				bestMatchPingTime = db.NodePingTimeDB[x]
 				nodeIndex = x
@@ -59,7 +59,7 @@ func (db *NodeDatabase) getBestNode() string {
 
 func (db *NodeDatabase) getBootstrap() string {
 	x := 0
-	for x != len(db.BootstrapNodeAddrs)-1 {
+	for x != len(db.BootstrapNodeAddrs) {
 		if TestIP(db.BootstrapNodeAddrs[x]) {
 			return db.BootstrapNodeAddrs[x]
 		}

@@ -28,10 +28,10 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 
 /*
 	TODO:
-		- fix double transaction witnessing
 		- make sure to read existing wallet on startup, rather than create new one
 		- add initialization method for chains that includes coin counts
 		- add method to read wallet from gob
+		- fix double transaction witnessing
 		- create reward transactions
 		- node registration
 		- wallets
@@ -133,19 +133,22 @@ func main() {
 			}
 			os.Stdout.Write(b)
 
+			test := &types.Transaction{}
+
 			//Creating witness data:
 
 			signature := types.HexToSignature("4920616d204d697473756b6f204d6567756d69")
 			witness := types.NewWitness(1000, signature, 100, wallet.Account)
 
-			//Creating transaction, contract, chain
+			if *relayFlag || *fullChainFlag {
+				//Creating transaction, contract, chain
 
-			test := types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.FloatToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
+				test = types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.FloatToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
 
-			//Adding witness, transaction to chain
+				//Adding witness, transaction to chain
 
-			types.WitnessTransaction(testchain, &wallet, test, &witness)
-			testchain.AddTransaction(test)
+				types.WitnessTransaction(testchain, &wallet, test, &witness)
+			}
 
 			//Test chain serialization
 
@@ -156,6 +159,17 @@ func main() {
 			if *relayFlag {
 				fmt.Println("\nattempting to relay")
 				networking.Relay(test, db)
+				chain, err := networking.FetchChain(db)
+
+				if err != nil {
+					panic(err)
+				}
+
+				b, err := json.MarshalIndent(chain, "", "  ")
+				if err != nil {
+					panic(err)
+				}
+				os.Stdout.Write(b)
 			} else if *fullChainFlag {
 				fmt.Println("\nattempting to relay")
 				networking.RelayChain(testDesChain, db)
