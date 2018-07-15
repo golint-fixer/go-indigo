@@ -20,8 +20,8 @@ type NodeDatabase struct {
 	NodeRefDB          []NodeID
 	NodePingTimeDB     []time.Time
 	NodeAddress        []string
-	SelfRef            NodeID
-	SelfAddr           string
+	SelfRef            NodeID `json:"-"`
+	SelfAddr           string `json:"-"`
 	BootstrapNodeAddrs []string
 }
 

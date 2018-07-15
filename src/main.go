@@ -224,7 +224,7 @@ func main() {
 		eDb.WriteDbToMemory(common.GetCurrentDir())
 
 		testcontract := new(contracts.Contract)
-		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0}
+		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0, MaxCirculating: 21000000}
 
 		testchain.WriteChainToMemory(common.GetCurrentDir())
 	} else if *registerNode {

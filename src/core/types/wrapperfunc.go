@@ -68,18 +68,29 @@ func Relay(Tx *Transaction, Db *discovery.NodeDatabase) error {
 			return err
 		}
 
-		if fChain.Transactions[len(fChain.Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
-			node := Db.FindNode()
+		if len(fChain.Transactions) > 0 {
+			if fChain.Transactions[len(fChain.Transactions)-1].InitialWitness.WitnessTime.Before(Tx.InitialWitness.WitnessTime) {
+				node := Db.FindNode()
 
-			common.ThrowSuccess("tx passed checks; relaying")
-			txBytes := new(bytes.Buffer)
-			json.NewEncoder(txBytes).Encode(Tx)
-			time.Sleep(20 * time.Millisecond)
-			newConnection(Db.SelfAddr, node, "relay", txBytes.Bytes()).attempt()
+				common.ThrowSuccess("tx passed checks; relaying")
+				txBytes := new(bytes.Buffer)
+				json.NewEncoder(txBytes).Encode(Tx)
+				time.Sleep(20 * time.Millisecond)
+				newConnection(Db.SelfAddr, node, "relay", txBytes.Bytes()).attempt()
 
-			return nil
+				return nil
+			}
+			return errors.New("transaction behind latest chain; fetch latest chain")
 		}
-		return errors.New("transaction behind latest chain; fetch latest chain")
+		node := Db.FindNode()
+
+		common.ThrowSuccess("tx passed checks; relaying")
+		txBytes := new(bytes.Buffer)
+		json.NewEncoder(txBytes).Encode(Tx)
+		time.Sleep(20 * time.Millisecond)
+		newConnection(Db.SelfAddr, node, "relay", txBytes.Bytes()).attempt()
+
+		return nil
 	}
 	return errors.New("operation not permitted; transaction not witnessed")
 }
@@ -120,7 +131,6 @@ func FetchChain(Db *discovery.NodeDatabase) (*Chain, error) {
 	}
 
 	connec.Write(connBytes.Bytes())
-	fmt.Printf("\nwrote connection meta: %s", connBytes.String())
 
 	/*
 		finished := make(chan bool)

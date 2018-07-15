@@ -12,7 +12,8 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 		tx.Weight += *CalculateWitnessWeight(witness)
 		tx.Verifications++
 
-		if tx.Verifications == 1 && string(tx.Data.Payload[:]) != "tx reward" {
+		if tx.Verifications == 2 && string(tx.Data.Payload[:]) != "tx reward" {
+			common.ThrowSuccess("transaction verified; creating reward")
 			go handleReward(ch, wallet, tx, witness)
 		} else if string(tx.Data.Payload[:]) == "tx reward" && !reflect.ValueOf(tx.Data.Root).IsNil() {
 			*tx.Data.Root.Data.UnspentReward -= uint64(*tx.Data.Amount)
@@ -22,7 +23,11 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 			tx.InitialWitness = witness
 		}
 
-		common.ThrowWarning("Added witness; transaction verified with weight " + common.FloatToString(tx.Weight))
+		if string(tx.Data.Payload[:]) == "tx reward" {
+			common.ThrowSuccess("Added witness; reward verified with weight " + common.FloatToString(tx.Weight))
+		} else {
+			common.ThrowWarning("Added witness; transaction verified with weight " + common.FloatToString(tx.Weight))
+		}
 	} else {
 		tx.Weight -= *CalculateWitnessWeight(witness)
 		tx.Verifications++
@@ -44,6 +49,7 @@ func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) 
 
 	WitnessTransaction(ch, wallet, nTx, witness)
 	(*ch).AddTransaction(nTx)
+	(*ch).Circulating += nTx.Data.Root.Reward
 
 	err := Relay(nTx, ch.NodeDb)
 
@@ -73,6 +79,7 @@ func VerifyTransaction(tx *Transaction) bool {
 
 func verifyCoinbase(tx *Transaction) bool {
 	if float64(*tx.Data.Root.Data.UnspentReward) == *tx.Data.Amount && string(tx.Data.Payload[:]) == "tx reward" {
+		common.ThrowSuccess("reward coinbase verified")
 		return true
 	}
 	return false

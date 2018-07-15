@@ -34,7 +34,7 @@ type Transaction struct {
 
 type transactiondata struct {
 	// Initialized in func:
-	Root          *Transaction `json:"root" gencoded:"required"`
+	Root          *Transaction `json:"root" gencodec:"required"`
 	Nonce         uint64       `json:"nonce" gencodec:"required"`
 	Recipient     *Address     `json:"recipient" gencodec:"required"`
 	Amount        *float64     `json:"value" gencodec:"required"`
@@ -89,8 +89,6 @@ func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *
 
 	tx.Reward = tx.calculateReward(Ch)
 	tx.Data.UnspentReward = &tx.Reward
-
-	(*Ch).Circulating += tx.Reward
 
 	return &tx
 }
