@@ -61,7 +61,7 @@ func TestRelayTx(t *testing.T) {
 		t.Errorf("Chain serialization failed: %s", sErr.Error())
 	}
 
-	test := types.NewTransaction(&testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.IntToPointer(1000), []byte{0x11, 0x11, 0x11}, nil, nil)
+	test := types.NewTransaction(&testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.FloatToPointer(float64(1000)), []byte{0x11, 0x11, 0x11}, nil, nil)
 
 	//Adding witness, transaction to chain
 
