@@ -132,8 +132,9 @@ func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 		return lastreward / 2
 	}
 
-	base = 10
-	(*Ch).Base = 10
+	if base == 0 {
+		base = 10
+	}
 
 	return base
 }
