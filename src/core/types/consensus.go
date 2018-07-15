@@ -64,12 +64,13 @@ func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) 
 	(*ch).AddTransaction(nTx)
 	(*ch).Circulating += nTx.Data.Root.Reward
 
-	err := Relay(nTx, ch.NodeDb)
+	if len(ch.NodeDb.NodeAddress) > 0 {
+		err := Relay(nTx, ch.NodeDb)
 
-	if err != nil && strings.Contains(err.Error(), "; fetch") {
-		return err
+		if err != nil && strings.Contains(err.Error(), "; fetch") {
+			return err
+		}
 	}
-
 	return nil
 }
 

@@ -109,9 +109,11 @@ func DecodeTxFromBytes(wallet *Wallet, ch *Chain, wit *Witness, b []byte) *Trans
 }
 
 func (tx Transaction) calculateReward(Ch *Chain) uint64 {
-	max := Ch.MaxCirculating
-	curr := Ch.Circulating
-	base := Ch.Base
+	actualCh := *Ch
+
+	max := actualCh.MaxCirculating
+	curr := actualCh.Circulating
+	base := actualCh.Base
 
 	var lastreward uint64
 
@@ -119,8 +121,8 @@ func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 		return 0
 	}
 
-	if len(Ch.Transactions) != 0 && !reflect.ValueOf(Ch.Transactions[len(Ch.Transactions)-1]).IsNil() {
-		lastreward = Ch.Transactions[len(Ch.Transactions)-1].Reward
+	if len(actualCh.Transactions) != 0 && !reflect.ValueOf(actualCh.Transactions[len(actualCh.Transactions)-1]).IsNil() {
+		lastreward = actualCh.Transactions[len(actualCh.Transactions)-1].Reward
 	} else {
 		lastreward = base
 	}

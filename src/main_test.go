@@ -50,7 +50,11 @@ func TestRelayTx(t *testing.T) {
 
 	//Creating new account:
 
-	wallet := *types.NewWallet(&testchain)
+	wallet, err := types.ReadWalletFromMemory(common.GetCurrentDir())
+
+	if err != nil {
+		panic(err)
+	}
 
 	//Creating witness data:
 

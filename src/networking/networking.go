@@ -109,7 +109,11 @@ func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) error {
 		fChain, err := FetchChain(Db)
 
 		if err != nil {
-			return err
+			fChain, err = FetchChain(Db)
+
+			if err != nil {
+				return err
+			}
 		}
 
 		if len(fChain.Transactions) > 0 {
