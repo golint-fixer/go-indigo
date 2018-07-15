@@ -121,8 +121,6 @@ func main() {
 		if *relayFlag || *hostFlag || *fullChainFlag {
 			testchain := types.ReadChainFromMemory(common.GetCurrentDir())
 
-			(*testchain).Base = 10
-
 			//Creating new wallet:
 
 			wallet = *types.NewWallet(testchain)
@@ -224,7 +222,7 @@ func main() {
 		eDb.WriteDbToMemory(common.GetCurrentDir())
 
 		testcontract := new(contracts.Contract)
-		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0, MaxCirculating: 21000000}
+		testchain := types.Chain{ParentContract: testcontract, NodeDb: eDb, Version: 0, MaxCirculating: 21000000, Base: 50}
 
 		testchain.WriteChainToMemory(common.GetCurrentDir())
 	} else if *registerNode {
