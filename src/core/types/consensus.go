@@ -43,14 +43,17 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 
 // handleReward - perform needed actions to account for a reward
 func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) error {
-	latestChain, err := FetchChain(ch.NodeDb)
+	go func() error {
+		fetchChain, err := FetchChain(ch.NodeDb)
 
-	if err != nil && !strings.Contains(err.Error(), "an existing connection") {
-		panic(err)
-		//return err
-	}
+		if err != nil && !strings.Contains(err.Error(), "an existing connection") {
+			return err
+		}
 
-	(*ch) = *latestChain
+		(*ch) = *fetchChain
+
+		return nil
+	}()
 
 	rewardVal := float64(tx.Reward)
 	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &rewardVal, []byte("tx reward"), nil, []byte("tx reward"))
@@ -61,10 +64,10 @@ func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) 
 	(*ch).AddTransaction(nTx)
 	(*ch).Circulating += nTx.Data.Root.Reward
 
-	err = Relay(nTx, ch.NodeDb)
+	err := Relay(nTx, ch.NodeDb)
 
-	if err != nil {
-		panic(err)
+	if err != nil && strings.Contains(err.Error(), "; fetch") {
+		return err
 	}
 
 	return nil
