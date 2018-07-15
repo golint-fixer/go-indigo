@@ -32,7 +32,7 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 		- add initialization method for chains that includes coin counts
 		- add method to read wallet from gob
 		- fix double transaction witnessing
-		- create reward transactions
+		- fix reward calculation
 		- node registration
 		- wallets
 */

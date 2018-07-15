@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto"
 	"encoding/json"
-	"reflect"
 	// crypto/sha256 - required for hashing functions
 	_ "crypto/sha256"
 	"fmt"
@@ -119,14 +118,16 @@ func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 		return 0
 	}
 
-	if !reflect.ValueOf(Ch.Transactions).IsNil() {
+	if len(Ch.Transactions) != 0 {
 		lastreward = Ch.Transactions[len(Ch.Transactions)-1].Reward
 	} else {
 		lastreward = base
 	}
 
+	fmt.Println("last reward: " + string(lastreward))
+
 	if lastreward != 0 && max != 0 && base != 0 {
-		if curr+lastreward/2 > max {
+		if curr+(lastreward/2) > max {
 			return 0
 		}
 		return lastreward / 2
