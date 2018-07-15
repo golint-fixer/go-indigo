@@ -2,6 +2,7 @@ package types
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/mitsukomegumi/indo-go/src/common"
 )
@@ -41,7 +42,16 @@ func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Wit
 }
 
 // handleReward - perform needed actions to account for a reward
-func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
+func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) error {
+	latestChain, err := FetchChain(ch.NodeDb)
+
+	if err != nil && !strings.Contains(err.Error(), "an existing connection") {
+		panic(err)
+		//return err
+	}
+
+	(*ch) = *latestChain
+
 	rewardVal := float64(tx.Reward)
 	nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &rewardVal, []byte("tx reward"), nil, []byte("tx reward"))
 	nTx.Data.Root = tx
@@ -51,11 +61,13 @@ func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) 
 	(*ch).AddTransaction(nTx)
 	(*ch).Circulating += nTx.Data.Root.Reward
 
-	err := Relay(nTx, ch.NodeDb)
+	err = Relay(nTx, ch.NodeDb)
 
 	if err != nil {
-		common.ThrowWarning(err.Error())
+		panic(err)
 	}
+
+	return nil
 }
 
 // CalculateWitnessWeight - calculate weight for individual witness based on implied or given weight
