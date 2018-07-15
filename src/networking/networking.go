@@ -300,7 +300,11 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 		defer func() {
 			fmt.Println(err)
 		}()
-		connec.Close()
+		err := connec.Close()
+
+		if err != nil {
+			return nil, err
+		}
 
 		return nil, err
 	}
