@@ -128,10 +128,10 @@ func (tx Transaction) calculateReward(Ch *Chain) uint64 {
 	common.ThrowWarning("\nlast reward: " + string(lastreward))
 
 	if lastreward != 0 && max != 0 && base != 0 {
-		if curr+(lastreward/2) > max {
+		if curr+(lastreward-(lastreward/200)) > max {
 			return 0
 		}
-		return lastreward / 2
+		return lastreward - (lastreward / 200)
 	}
 
 	if base == 0 {

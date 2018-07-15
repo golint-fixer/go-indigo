@@ -156,7 +156,14 @@ func main() {
 
 			if *relayFlag {
 				fmt.Println("\nattempting to relay")
-				networking.Relay(test, db)
+				if *loopFlag {
+					for {
+						networking.Relay(test, db)
+					}
+				} else {
+					networking.Relay(test, db)
+				}
+
 				chain, err := networking.FetchChain(db)
 
 				if err != nil {
