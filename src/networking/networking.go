@@ -106,6 +106,9 @@ func GetExtIPAddrNoUpNP() (string, error) {
 func Relay(Tx *types.Transaction, Db *discovery.NodeDatabase) error {
 	if !reflect.ValueOf(Tx.InitialWitness).IsNil() {
 		common.ThrowWarning("verifying tx on current chain")
+
+		defer recover()
+
 		fChain, err := FetchChain(Db)
 
 		if err != nil {
@@ -297,15 +300,6 @@ func FetchChain(Db *discovery.NodeDatabase) (*types.Chain, error) {
 	common.ThrowWarning("attempting to connect to node " + Node + ":3000")
 
 	if err != nil {
-		defer func() {
-			fmt.Println(err)
-		}()
-		err := connec.Close()
-
-		if err != nil {
-			return nil, err
-		}
-
 		return nil, err
 	}
 
