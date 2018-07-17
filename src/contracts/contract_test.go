@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -15,5 +15,5 @@ func TestContract(t *testing.T) {
 
 	contract := Contract{RuntimeEnv: environment}
 
-	fmt.Println(contract.RuntimeEnv.Variables[0].CheckCondition())
+	t.Log("contract value: " + strconv.FormatBool(contract.RuntimeEnv.Variables[0].CheckCondition()))
 }
