@@ -33,8 +33,10 @@ type ContractVariable struct {
 	Input  interface{} `json:"input"`
 	Output interface{} `json:"output"`
 
-	Conditionals []byte `json:"conditionals"`
-	Modifiers    []byte `json:"modifiers"`
+	Conditionals      []byte      `json:"conditionals"`
+	Modifier          interface{} `json:"modifiers"`
+	ModifierOperation []byte      `json:"operation"`
+	Modified          interface{} `json:"modifiedval"`
 
 	Events []*ContractEvent `json:"variable events"`
 
@@ -65,4 +67,16 @@ func (variable *ContractVariable) CheckCondition() bool {
 	}
 
 	return false
+}
+
+func (variable *ContractVariable) applyModifier() {
+	if strings.Contains(string(variable.ModifierOperation[:]), "-") {
+		variable.Modified = variable.Input.(float64) - variable.Output.(float64)
+	} else if strings.Contains(string(variable.ModifierOperation[:]), "/") {
+		variable.Modified = variable.Input.(float64) / variable.Output.(float64)
+	} else if strings.Contains(string(variable.ModifierOperation[:]), "*") {
+		variable.Modified = variable.Input.(float64) * variable.Output.(float64)
+	} else if strings.Contains(string(variable.ModifierOperation[:]), "+") {
+		variable.Modified = variable.Input.(float64) + variable.Output.(float64)
+	}
 }
