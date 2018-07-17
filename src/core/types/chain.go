@@ -18,7 +18,8 @@ type Chain struct {
 
 	NodeDb *discovery.NodeDatabase `json:"database"`
 
-	Transactions []*Transaction `json:"transactions"`
+	Transactions []*Transaction        `json:"transactions"`
+	Contracts    []*contracts.Contract `json:"contracts"`
 
 	MaxCirculating uint64 `json:"maxcirculating"`
 	Circulating    uint64 `json:"circulating"`
@@ -32,6 +33,8 @@ type Chain struct {
 func (RefChain *Chain) AddTransaction(Transaction *Transaction) {
 	if VerifyTransaction(Transaction) {
 		RefChain.Transactions = append(RefChain.Transactions, Transaction)
+
+		RefChain.Contracts = append(RefChain.Contracts, Transaction.Contract)
 
 		if Transaction.ChainVersion == 0 {
 			RefChain.Version++

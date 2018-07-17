@@ -60,8 +60,8 @@ func NewTransaction(ch *Chain, nonce uint64, SendingAccount Account, PrivateKey 
 }
 
 //NewContractCreation - Create new instance of transaction struct specifying contract creation arguments.
-func NewContractCreation(ch *Chain, nonce uint64, IssuingAccount Account, amount *float64, data []byte, extra []byte) *Transaction {
-	return newTransaction(ch, nonce, IssuingAccount, nil, amount, data, nil, extra)
+func NewContractCreation(ch *Chain, nonce uint64, IssuingAccount Account, amount *float64, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
+	return newTransaction(ch, nonce, IssuingAccount, nil, amount, data, contract, extra)
 }
 
 func newTransaction(Ch *Chain, nonce uint64, from Account, to *Address, amount *float64, data []byte, contract *contracts.Contract, extra []byte) *Transaction {
