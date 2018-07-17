@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/contracts"
-	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+	"github.com/mitsukomegumi/go-indigo/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/contracts"
+	"github.com/mitsukomegumi/go-indigo/src/networking/discovery"
 )
 
 // Chain - Connected collection of transactions

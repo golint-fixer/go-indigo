@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/contracts"
+	"github.com/mitsukomegumi/go-indigo/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/contracts"
 )
 
 //Transaction - Data representing transfer of value (can be null), as well as the transfer of data via payload. May be triggered on conditions, set via smart contract.

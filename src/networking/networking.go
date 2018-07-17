@@ -17,9 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/core/types"
-	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+	"github.com/mitsukomegumi/go-indigo/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/core/types"
+	"github.com/mitsukomegumi/go-indigo/src/networking/discovery"
 
 	upnp "github.com/nebulouslabs/go-upnp"
 )

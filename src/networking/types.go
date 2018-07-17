@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/mitsukomegumi/indo-go/src/core/types"
+	"github.com/mitsukomegumi/go-indigo/src/core/types"
 	upnp "github.com/nebulouslabs/go-upnp"
 )
 

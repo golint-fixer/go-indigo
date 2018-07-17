@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mitsukomegumi/indo-go/src/networking/fastping"
+	"github.com/mitsukomegumi/go-indigo/src/networking/fastping"
 )
 
 type response struct {

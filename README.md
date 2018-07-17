@@ -2,7 +2,7 @@
 
 Core go implementation of Indo protocol.
 
-[![Build Status](https://travis-ci.com/mitsukomegumi/indo-go.svg?branch=master)](https://travis-ci.com/mitsukomegumi/indo-go)
+[![Build Status](https://travis-ci.com/mitsukomegumi/go-indigo.svg?branch=master)](https://travis-ci.com/mitsukomegumi/go-indigo)
 
 ## Our Mission
 
@@ -18,10 +18,10 @@ Want to contribute to the development of Indo? Submit a pull request or contact 
 
 ## Building
 
-Indo-go currently requires the latest build of the Go Language, which can be downloaded [here](https://golang.org/). After installing the Go Language, get the indo-go package by running
+go-indigo currently requires the latest build of the Go Language, which can be downloaded [here](https://golang.org/). After installing the Go Language, get the go-indigo package by running
 
 ```bash
-go get github.com/mitsukomegumi/indo-go
+go get github.com/mitsukomegumi/go-indigo
 ```
 
 in your go-compatible command line of choice. The latest executable builds should be already be available, but feel free to build your own by running
@@ -34,7 +34,7 @@ in the package's src folder.
 
 ### Running
 
-Indo-go currently has 4 executable CLI flags used for testing and debugging:
+go-indigo currently has 4 executable CLI flags used for testing and debugging:
 
 ```bash
 go run main.go --relay
@@ -45,7 +45,7 @@ go run main.go --host
 
 ### Dependencies
 
-Indo-go requires golang's net package, of which can be acquired by running
+go-indigo requires golang's net package, of which can be acquired by running
 
 ```bash
 go get golang.org/x/net

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/common"
 )
 
 // WitnessTransaction - add witness data to specified transaction if verified

@@ -11,8 +11,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
-	"github.com/mitsukomegumi/indo-go/src/networking/discovery"
+	"github.com/mitsukomegumi/go-indigo/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/networking/discovery"
 )
 
 const (

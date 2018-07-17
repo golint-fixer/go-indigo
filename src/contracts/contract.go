@@ -6,7 +6,7 @@ package contracts
 import (
 	"strings"
 
-	types "github.com/mitsukomegumi/indo-go/src/core/types/payload"
+	types "github.com/mitsukomegumi/go-indigo/src/core/types/payload"
 )
 
 // EventTypes - Available event types

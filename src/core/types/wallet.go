@@ -3,7 +3,7 @@ package types
 import (
 	"errors"
 
-	"github.com/mitsukomegumi/indo-go/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/common"
 )
 
 // Wallet - holds private, public keys linking to specified account
