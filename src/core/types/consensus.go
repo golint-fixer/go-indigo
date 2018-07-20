@@ -10,6 +10,8 @@ import (
 // WitnessTransaction - add witness data to specified transaction if verified
 func WitnessTransaction(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) {
 	if VerifyTransaction(tx) {
+		go handleContracts(ch, witness, wallet)
+
 		tx.Weight += *CalculateWitnessWeight(witness)
 		tx.Verifications++
 
@@ -71,6 +73,43 @@ func handleReward(ch *Chain, wallet *Wallet, tx *Transaction, witness *Witness) 
 			return err
 		}
 	}
+	return nil
+}
+
+func handleContracts(ch *Chain, witness *Witness, wallet *Wallet) error {
+	go func() error {
+		fChain, err := FetchChain(ch.NodeDb)
+
+		if err != nil {
+			return err
+		}
+
+		(*ch) = *fChain
+
+		return nil
+	}()
+
+	x := 0
+
+	zeroVal := float64(0)
+
+	for x != len(ch.Contracts) {
+		nTx := NewTransaction(ch, 0, *witness.WitnessAccount, wallet.PrivateKey, wallet.PrivateKeySeeds, wallet.PublicKey, &zeroVal, []byte("tx reward"), nil, []byte("contract request"))
+
+		WitnessTransaction(ch, wallet, nTx, witness)
+		(*ch).AddTransaction(nTx)
+
+		if len(ch.NodeDb.NodeAddress) > 0 {
+			err := Relay(nTx, ch.NodeDb)
+
+			if err != nil && strings.Contains(err.Error(), "; fetch") {
+				return err
+			}
+		}
+
+		x++
+	}
+
 	return nil
 }
 
