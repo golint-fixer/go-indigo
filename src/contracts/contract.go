@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/MitsukoMegumi/go-indigo/src/common"
+	"github.com/mitsukomegumi/go-indigo/src/common"
 	types "github.com/mitsukomegumi/go-indigo/src/core/types/payload"
 )
 

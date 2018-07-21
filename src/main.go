@@ -35,6 +35,7 @@ var noUpNPFlag = flag.Bool("noupnp", false, "used for nodes without upnp")
 		- fix reward calculation
 		- node registration
 		- wallets
+		- oracles
 */
 
 func main() {
