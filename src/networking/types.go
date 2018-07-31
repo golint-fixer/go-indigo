@@ -38,7 +38,7 @@ type Connection struct {
 	Hash *types.Hash `json:"connectionhash"`
 }
 
-// ConnectionEvent - string inidicating if event occurred between peers or on network
+// ConnectionEvent - string indicating if event occurred between peers or on network
 type ConnectionEvent string
 
 // ConnectionType - represents type of connection being made
