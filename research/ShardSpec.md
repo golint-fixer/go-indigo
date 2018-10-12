@@ -26,7 +26,7 @@ In the proposed network, shards are defined as groups of transaction-verifying n
 Node 0 Node 1 Node 2
 ```
 
-Each 'shard' contains x amount of nodes, each processing all of the transactions addressed to the shard. The shard containing such nodes is a child of a 'Parent Shard.'
+Each 'shard' contains x amount of nodes, each processing all of the transactions addressed to the shard. Again, it should be noted that shards can increase in size, and can contain child shards, which--in turn--can also contain child shards.
 
 ## Shard-level Consensus
 
