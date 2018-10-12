@@ -26,3 +26,5 @@
         ChainVersion [uint64]: Index in chain
     }
 ```
+
+As proposed in the above diagram, each transaction contains the fields TransactionData (transaction metadata), Contract (optional destination contract), Verifications (amount of verifications), Weight (transaction weight), InitialWitness (first node witnessing transaction), SendingAccount (account issuing transaction), Reward (amount of currency distributed throughout verifying shard), and ChainVersion (an incrementing index of a transaction in the chain).

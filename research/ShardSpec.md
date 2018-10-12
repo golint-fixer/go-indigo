@@ -1,5 +1,9 @@
 # General Sharding Specification
 
+## Shard Definition
+
+In the proposed network, shards are defined as groups of transaction-verifying nodes. The size of a shard is dynamic, and calculated at runtime. In said shards, each sibling node processes the exact same amount of information, and stores the same portion of the state. Should any node in said shard disobey any rule set forth by the protocol, that node's stake will be burned and will be banned from the shard. In reference to aforementioned stake, one would find [Proof-of-stake Outline](ProofOfStake.md) quite helpful.
+
 ## Layout of 'Shards'
 
 ```MARKDOWN
