@@ -85,9 +85,9 @@ func main() {
 					ip, err = networking.GetExtIPAddrNoUpNP()
 				}
 
-				selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+				selfID := discovery.NodeID{} // Testing init of NodeID (self reference)
 
-				db, err := discovery.NewNodeDatabase(selfID, ip) //Initializing net New NodeDatabase
+				db, err := discovery.NewNodeDatabase(selfID, ip) // Initializing net New NodeDatabase
 
 				if err != nil {
 					panic(err)
@@ -100,9 +100,9 @@ func main() {
 				networking.PrepareForConnection(gd, eDb)
 			}
 		} else {
-			selfID := discovery.NodeID{} //Testing init of NodeID (self reference)
+			selfID := discovery.NodeID{} // Testing init of NodeID (self reference)
 
-			db, err := discovery.NewNodeDatabase(selfID, "") //Initializing net New NodeDatabase
+			db, err := discovery.NewNodeDatabase(selfID, "") // Initializing net New NodeDatabase
 
 			if err != nil {
 				panic(err)
@@ -140,16 +140,16 @@ func main() {
 			witness := types.NewWitness(1000, signature, 100, wallet.Account)
 
 			if *relayFlag || *fullChainFlag {
-				//Creating transaction, contract, chain
+				// Creating transaction, contract, chain
 
 				test = types.NewTransaction(testchain, uint64(1), *wallet.Account, wallet.PrivateKey, wallet.PrivateKeySeeds, types.HexToAddress("4920616d204d697473756b6f204d6567756d69"), common.FloatToPointer(0), []byte{0x11, 0x11, 0x11}, nil, nil)
 
-				//Adding witness, transaction to chain
+				// Adding witness, transaction to chain
 
 				types.WitnessTransaction(testchain, &wallet, test, &witness)
 			}
 
-			//Test chain serialization
+			// Test chain serialization
 
 			testchain.WriteChainToMemory(common.GetCurrentDir())
 

@@ -1,0 +1,3 @@
+# Polaris: The First Infinitely Scalable, Distributed Planetary Computer
+
+Polaris is the world's first infinitely scalable, entirely distributed computations network built for the next generation of the web. Computations on Polaris are backed by Polaris's equally distributed, uncensorable digital currency. In contrast to modern-day computational and financial networks that require the trust of a third-party, Polaris aims to bring control over the internet back to the everyday user and to give anyone the ability to create powerful, decentralized applications with the flick of a switch.
